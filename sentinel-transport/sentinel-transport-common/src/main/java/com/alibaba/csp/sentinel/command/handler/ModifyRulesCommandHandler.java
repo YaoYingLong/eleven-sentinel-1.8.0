@@ -75,7 +75,7 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);
-            if (!writeToDataSource(getFlowDataSource(), flowRules)) {
+            if (!writeToDataSource(getFlowDataSource(), flowRules)) { // 获取写数据源，做持久化
                 result = WRITE_DS_FAILURE_MSG;
             }
             return CommandResponse.ofSuccess(result);

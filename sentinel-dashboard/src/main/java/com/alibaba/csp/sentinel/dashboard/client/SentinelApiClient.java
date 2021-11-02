@@ -282,7 +282,7 @@ public class SentinelApiClient {
             future.completeExceptionally(new IllegalArgumentException("Bad URL or command name"));
             return future;
         }
-        StringBuilder urlBuilder = new StringBuilder();
+        StringBuilder urlBuilder = new StringBuilder(); // 拼接客户端推送规则配置的URL
         urlBuilder.append("http://");
         urlBuilder.append(ip).append(':').append(port).append('/').append(api);
         if (params == null) {
@@ -419,8 +419,7 @@ public class SentinelApiClient {
             AssertUtil.notEmpty(app, "Bad app name");
             AssertUtil.notEmpty(ip, "Bad machine IP");
             AssertUtil.isTrue(port > 0, "Bad machine port");
-            String data = JSON.toJSONString(
-                entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
+            String data = JSON.toJSONString(entities.stream().map(r -> r.toRule()).collect(Collectors.toList()));
             Map<String, String> params = new HashMap<>(2);
             params.put("type", type);
             params.put("data", data);

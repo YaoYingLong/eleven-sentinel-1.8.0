@@ -77,12 +77,10 @@ public class HttpEventTask implements Runnable {
             inputStream = new BufferedInputStream(socket.getInputStream());
             OutputStream outputStream = socket.getOutputStream();
 
-            printWriter = new PrintWriter(
-                new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
+            printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
 
             String firstLine = readLine(inputStream);
-            CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + firstLine
-                + ", addr: " + socket.getInetAddress());
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + firstLine + ", addr: " + socket.getInetAddress());
             CommandRequest request = processQueryString(firstLine);
 
             if (firstLine.length() > 4 && StringUtil.equalsIgnoreCase("POST", firstLine.substring(0, 4))) {
