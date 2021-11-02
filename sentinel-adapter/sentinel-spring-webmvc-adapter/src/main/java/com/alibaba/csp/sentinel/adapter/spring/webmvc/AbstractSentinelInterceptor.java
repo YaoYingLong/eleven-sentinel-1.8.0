@@ -85,19 +85,15 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     }
     
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-        throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         try {
             String resourceName = getResourceName(request);
-
             if (StringUtil.isEmpty(resourceName)) {
                 return true;
             }
-            
             if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
-            
             // Parse the request origin using registered origin parser.
             String origin = parseOrigin(request);
             String contextName = getContextName(request);
@@ -106,7 +102,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             request.setAttribute(baseWebMvcConfig.getRequestAttributeName(), entry);
             return true;
         } catch (BlockException e) {
-            try {
+            try { // 处理注解属性blockHandler方法，当抛出BlockException规则校验异常时会被调用
                 handleBlockException(request, response, e);
             } finally {
                 ContextUtil.exit();
@@ -176,8 +172,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         }
     }
 
-    protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e)
-        throws Exception {
+    protected void handleBlockException(HttpServletRequest request, HttpServletResponse response, BlockException e) throws Exception {
         if (baseWebMvcConfig.getBlockExceptionHandler() != null) {
             baseWebMvcConfig.getBlockExceptionHandler().handle(request, response, e);
         } else {

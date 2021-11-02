@@ -48,7 +48,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
-        String resourceName = getResourceName(annotation.value(), originMethod);
+        String resourceName = getResourceName(annotation.value(), originMethod); // 获取注解上配置的资源名称
         EntryType entryType = annotation.entryType();
         int resourceType = annotation.resourceType();
         Entry entry = null;

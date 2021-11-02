@@ -138,12 +138,9 @@ public abstract class AbstractSentinelAspectSupport {
         throw ex;
     }
 
-    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
-        throws Throwable {
-
+    protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex) throws Throwable {
         // Execute block handler if configured.
-        Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
-            annotation.blockHandlerClass());
+        Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(), annotation.blockHandlerClass());
         if (blockHandlerMethod != null) {
             Object[] originArgs = pjp.getArgs();
             // Construct args.
@@ -245,7 +242,6 @@ public abstract class AbstractSentinelAspectSupport {
         if (StringUtil.isBlank(name)) {
             return null;
         }
-
         boolean mustStatic = locationClass != null && locationClass.length >= 1;
         Class<?> clazz;
         if (mustStatic) {
@@ -313,8 +309,7 @@ public abstract class AbstractSentinelAspectSupport {
         MethodSignature signature = (MethodSignature)joinPoint.getSignature();
         Class<?> targetClass = joinPoint.getTarget().getClass();
 
-        Method method = getDeclaredMethodFor(targetClass, signature.getName(),
-            signature.getMethod().getParameterTypes());
+        Method method = getDeclaredMethodFor(targetClass, signature.getName(), signature.getMethod().getParameterTypes());
         if (method == null) {
             throw new IllegalStateException("Cannot resolve target method: " + signature.getMethod().getName());
         }

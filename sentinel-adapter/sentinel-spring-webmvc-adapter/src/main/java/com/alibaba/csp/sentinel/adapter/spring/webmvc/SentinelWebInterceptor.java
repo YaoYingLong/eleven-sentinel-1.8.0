@@ -71,7 +71,6 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         if (config.isWebContextUnify()) {
             return super.getContextName(request);
         }
-
         return getResourceName(request);
     }
 }

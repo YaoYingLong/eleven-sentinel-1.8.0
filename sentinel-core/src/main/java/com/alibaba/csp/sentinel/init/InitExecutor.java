@@ -38,7 +38,7 @@ public final class InitExecutor {
      *
      * The initialization will be executed only once.
      */
-    public static void doInit() {
+    public static void doInit() { // Sentinel扩展点，通过SPI的方式加载实现了InitFunc接口的类
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
@@ -51,8 +51,7 @@ public final class InitExecutor {
             }
             for (OrderWrapper w : initList) {
                 w.func.init();
-                RecordLog.info(String.format("[InitExecutor] Executing %s with order %d",
-                    w.func.getClass().getCanonicalName(), w.order));
+                RecordLog.info(String.format("[InitExecutor] Executing %s with order %d", w.func.getClass().getCanonicalName(), w.order));
             }
         } catch (Exception ex) {
             RecordLog.warn("[InitExecutor] WARN: Initialization failed", ex);
@@ -64,14 +63,14 @@ public final class InitExecutor {
     }
 
     private static void insertSorted(List<OrderWrapper> list, InitFunc func) {
-        int order = resolveOrder(func);
+        int order = resolveOrder(func); // 获取排序，若该类上没有@InitOrder注解则默认是最低优先级即Integer.MAX_VALUE
         int idx = 0;
         for (; idx < list.size(); idx++) {
             if (list.get(idx).getOrder() > order) {
                 break;
             }
         }
-        list.add(idx, new OrderWrapper(order, func));
+        list.add(idx, new OrderWrapper(order, func)); // 将其按照order从大到小即优先级越低越排在前面的顺序放入List中
     }
 
     private static int resolveOrder(InitFunc func) {
