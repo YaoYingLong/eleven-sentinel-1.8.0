@@ -133,6 +133,9 @@ public class FlowControllerV1 {
         return null;
     }
 
+    /**
+     * 发布流控规则接口
+     */
     @PostMapping("/rule")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
@@ -147,7 +150,7 @@ public class FlowControllerV1 {
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
         try {
-            entity = repository.save(entity);
+            entity = repository.save(entity); // 控制台保存规则，持久化扩展点RuleRepository
 
             publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
             return Result.ofSuccess(entity);
@@ -268,6 +271,6 @@ public class FlowControllerV1 {
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules); // 和sentinel客户端通信，异步设置流控规则
     }
 }

@@ -34,7 +34,7 @@ public interface CommandCenter {
      *
      * @throws Exception if error occurs
      */
-    void start() throws Exception;
+    void start() throws Exception; // 启动通信
 
     /**
      * Stop the command center and do cleanup.

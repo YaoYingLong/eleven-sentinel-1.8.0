@@ -224,7 +224,7 @@ public class FlowRuleEntity implements RuleEntity {
     }
 
     @Override
-    public FlowRule toRule() {
+    public FlowRule toRule() { // 完成实例类转换
         FlowRule flowRule = new FlowRule();
         flowRule.setCount(this.count);
         flowRule.setGrade(this.grade);
