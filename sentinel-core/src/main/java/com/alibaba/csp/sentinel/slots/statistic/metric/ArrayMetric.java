@@ -37,7 +37,7 @@ public class ArrayMetric implements Metric {
 
     private final LeapArray<MetricBucket> data;
 
-    public ArrayMetric(int sampleCount, int intervalInMs) {
+    public ArrayMetric(int sampleCount, int intervalInMs) { // sampleCount为2，intervalInMs为1000ms
         this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
     }
 
@@ -241,8 +241,8 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addPass(int count) {
-        WindowWrap<MetricBucket> wrap = data.currentWindow();
-        wrap.value().addPass(count);
+        WindowWrap<MetricBucket> wrap = data.currentWindow(); // 根据当前时间定位到具体的窗格
+        wrap.value().addPass(count); // 将具体的窗格的具体指标加一
     }
 
     @Override

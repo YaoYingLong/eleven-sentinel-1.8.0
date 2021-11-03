@@ -47,6 +47,6 @@ public final class TimeUtil {
     }
 
     public static long currentTimeMillis() {
-        return currentTimeMillis;
+        return currentTimeMillis; // 通过异步线程异步更新，没获取一次当前时间就休眠1ms
     }
 }

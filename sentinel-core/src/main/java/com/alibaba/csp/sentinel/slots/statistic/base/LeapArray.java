@@ -57,16 +57,15 @@ public abstract class LeapArray<T> {
      * @param sampleCount  bucket count of the sliding window
      * @param intervalInMs the total time interval of this {@link LeapArray} in milliseconds
      */
-    public LeapArray(int sampleCount, int intervalInMs) {
+    public LeapArray(int sampleCount, int intervalInMs) { // 初始化一个跨度为1000ms包含两个500ms时间窗口对象，初始化时两个小窗口为空
         AssertUtil.isTrue(sampleCount > 0, "bucket count is invalid: " + sampleCount);
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
-        this.windowLengthInMs = intervalInMs / sampleCount;
+        this.windowLengthInMs = intervalInMs / sampleCount; // 时间窗口长度为500ms
         this.intervalInMs = intervalInMs;
         this.sampleCount = sampleCount;
-
-        this.array = new AtomicReferenceArray<>(sampleCount);
+        this.array = new AtomicReferenceArray<>(sampleCount); // 数组长度为2
     }
 
     /**
@@ -116,9 +115,9 @@ public abstract class LeapArray<T> {
             return null;
         }
 
-        int idx = calculateTimeIdx(timeMillis);
+        int idx = calculateTimeIdx(timeMillis); // 根据当前时间计算当前计数应该落在哪个小窗格中
         // Calculate current bucket start time.
-        long windowStart = calculateWindowStart(timeMillis);
+        long windowStart = calculateWindowStart(timeMillis); // 计算当前小窗口开始时间
 
         /*
          * Get bucket item at given time from the array.
@@ -192,7 +191,7 @@ public abstract class LeapArray<T> {
                     // Contention failed, the thread will yield its time slice to wait for bucket available.
                     Thread.yield();
                 }
-            } else if (windowStart < old.windowStart()) {
+            } else if (windowStart < old.windowStart()) { // 不会出现，除非出现时钟回拨
                 // Should not go through here, as the provided time is already behind.
                 return new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
             }
