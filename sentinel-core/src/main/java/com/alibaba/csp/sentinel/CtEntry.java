@@ -33,7 +33,6 @@ import com.alibaba.csp.sentinel.util.function.BiConsumer;
  * @author Eric Zhao
  */
 class CtEntry extends Entry {
-
     protected Entry parent = null;
     protected Entry child = null;
 
@@ -45,7 +44,6 @@ class CtEntry extends Entry {
         super(resourceWrapper);
         this.chain = chain;
         this.context = context;
-
         setUpEntryFor(context);
     }
 
@@ -89,23 +87,19 @@ class CtEntry extends Entry {
             if (context instanceof NullContext) {
                 return;
             }
-
             if (context.getCurEntry() != this) {
-                String curEntryNameInContext = context.getCurEntry() == null ? null
-                    : context.getCurEntry().getResourceWrapper().getName();
+                String curEntryNameInContext = context.getCurEntry() == null ? null : context.getCurEntry().getResourceWrapper().getName();
                 // Clean previous call stack.
                 CtEntry e = (CtEntry) context.getCurEntry();
                 while (e != null) {
                     e.exit(count, args);
                     e = (CtEntry) e.parent;
                 }
-                String errorMessage = String.format("The order of entry exit can't be paired with the order of entry"
-                        + ", current entry in context: <%s>, but expected: <%s>", curEntryNameInContext,
-                    resourceWrapper.getName());
+                String errorMessage = String.format("The order of entry exit can't be paired with the order of entry, current entry in context: <%s>, but expected: <%s>", curEntryNameInContext, resourceWrapper.getName());
                 throw new ErrorEntryFreeException(errorMessage);
             } else {
                 // Go through the onExit hook of all slots.
-                if (chain != null) {
+                if (chain != null) { // 逐个调用slot校验链条中的每个校验规则的退出exit逻辑
                     chain.exit(context, resourceWrapper, count, args);
                 }
                 // Go through the existing terminate handlers (associated to this invocation).
@@ -143,7 +137,6 @@ class CtEntry extends Entry {
     @Override
     protected Entry trueExit(int count, Object... args) throws ErrorEntryFreeException {
         exitForContext(context, count, args);
-
         return parent;
     }
 

@@ -131,7 +131,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromHalfOpenToOpen(double snapshotValue) {
         if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
-            updateNextRetryTimestamp();
+            updateNextRetryTimestamp(); // 只要断路器再次被打开，就会按配置的熔断时长更新断路器的熔断周期
             notifyObservers(State.HALF_OPEN, State.OPEN, snapshotValue);
             return true;
         }
@@ -140,7 +140,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromHalfOpenToClose() {
         if (currentState.compareAndSet(State.HALF_OPEN, State.CLOSED)) {
-            resetStat();
+            resetStat(); // 重置慢调用和中调用统计次数为0
             notifyObservers(State.HALF_OPEN, State.CLOSED, null);
             return true;
         }

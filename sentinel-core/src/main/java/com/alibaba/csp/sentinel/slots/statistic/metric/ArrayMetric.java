@@ -44,7 +44,7 @@ public class ArrayMetric implements Metric {
     public ArrayMetric(int sampleCount, int intervalInMs, boolean enableOccupy) {
         if (enableOccupy) {
             this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
-        } else {
+        } else { // 默认走下面这个分支，sampleCount默认为60，intervalInMs默认为60 * 1000
             this.data = new BucketLeapArray(sampleCount, intervalInMs);
         }
     }

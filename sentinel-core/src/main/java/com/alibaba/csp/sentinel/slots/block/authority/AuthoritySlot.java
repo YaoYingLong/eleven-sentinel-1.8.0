@@ -35,9 +35,8 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
-        throws Throwable {
-        checkBlackWhiteAuthority(resourceWrapper, context);
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
+        checkBlackWhiteAuthority(resourceWrapper, context); // 校验资源授权规则，黑名单白名单规则校验
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
@@ -48,18 +47,16 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
         Map<String, Set<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
-
         if (authorityRules == null) {
             return;
         }
-
         Set<AuthorityRule> rules = authorityRules.get(resource.getName());
         if (rules == null) {
             return;
         }
-
-        for (AuthorityRule rule : rules) {
+        for (AuthorityRule rule : rules) { // 授权规则遍历
             if (!AuthorityRuleChecker.passCheck(rule, context)) {
+                // 若授权规则为黑名单且请求者包含在黑名单中，或若授权规则为白名单且请求者不包含在白名单中
                 throw new AuthorityException(context.getOrigin(), rule);
             }
         }

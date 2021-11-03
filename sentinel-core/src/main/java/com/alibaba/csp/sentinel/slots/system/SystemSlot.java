@@ -32,8 +32,7 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 public class SystemSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
         SystemRuleManager.checkSystem(resourceWrapper);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }

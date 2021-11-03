@@ -24,18 +24,14 @@ import com.alibaba.csp.sentinel.context.Context;
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
-
         @Override
-        public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
-            throws Throwable {
+        public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args) throws Throwable {
             super.fireEntry(context, resourceWrapper, t, count, prioritized, args);
         }
-
         @Override
         public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
             super.fireExit(context, resourceWrapper, count, args);
         }
-
     };
     AbstractLinkedProcessorSlot<?> end = first;
 

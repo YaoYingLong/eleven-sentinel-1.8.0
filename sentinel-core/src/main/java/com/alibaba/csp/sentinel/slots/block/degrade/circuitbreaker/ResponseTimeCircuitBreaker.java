@@ -61,7 +61,7 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     @Override
-    public void onRequestComplete(Context context) {
+    public void onRequestComplete(Context context) { // 慢调用比例降级判断逻辑
         SlowRequestCounter counter = slidingCounter.currentWindow().value();
         Entry entry = context.getCurEntry();
         if (entry == null) {
@@ -73,42 +73,40 @@ public class ResponseTimeCircuitBreaker extends AbstractCircuitBreaker {
         }
         long rt = completeTime - entry.getCreateTimestamp();
         if (rt > maxAllowedRt) {
-            counter.slowCount.add(1);
+            counter.slowCount.add(1); // 若请求响应时间超过最大RT时间，把慢调用次数加一
         }
-        counter.totalCount.add(1);
-
-        handleStateChangeWhenThresholdExceeded(rt);
+        counter.totalCount.add(1); // 总调用次数加一
+        handleStateChangeWhenThresholdExceeded(rt); // 调用完处理断路器状态
     }
 
     private void handleStateChangeWhenThresholdExceeded(long rt) {
         if (currentState.get() == State.OPEN) {
-            return;
+            return; // 若断路器是打开状态直接返回
         }
-        
-        if (currentState.get() == State.HALF_OPEN) {
+        if (currentState.get() == State.HALF_OPEN) { // 若断路器是搬开状态
             // In detecting request
             // TODO: improve logic for half-open recovery
-            if (rt > maxAllowedRt) {
+            if (rt > maxAllowedRt) { // 断路器半开状态一般都是尝试调用一次请求，若这次调用响应时间依然超过最大RT阈值则将断路器打开
                 fromHalfOpenToOpen(1.0d);
-            } else {
+            } else { // 若这次调用响应时间没有超过最大RT阈值则将断路器关闭
                 fromHalfOpenToClose();
             }
             return;
         }
-
+        // 走到这里说明断路器是关闭状态的
         List<SlowRequestCounter> counters = slidingCounter.values();
         long slowCount = 0;
         long totalCount = 0;
         for (SlowRequestCounter counter : counters) {
-            slowCount += counter.slowCount.sum();
-            totalCount += counter.totalCount.sum();
+            slowCount += counter.slowCount.sum(); // 时间窗口内慢调用次数中总和
+            totalCount += counter.totalCount.sum(); // 时间窗口内总调用次数中总和
         }
         if (totalCount < minRequestAmount) {
-            return;
+            return; // 若总调用次数小于配置最小请求数，则不修改断路器状态，直接返回
         }
-        double currentRatio = slowCount * 1.0d / totalCount;
+        double currentRatio = slowCount * 1.0d / totalCount; // 计算慢调用比例
         if (currentRatio > maxSlowRequestRatio) {
-            transformToOpen(currentRatio);
+            transformToOpen(currentRatio); // 若慢调用比例超过配置阈值则将断路器打开
         }
     }
 

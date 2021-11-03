@@ -31,13 +31,11 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args)
-        throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode obj, int count, boolean prioritized, Object... args) throws Throwable {
         try {
             fireEntry(context, resourceWrapper, obj, count, prioritized, args);
         } catch (BlockException e) {
-            EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(),
-                context.getOrigin(), count);
+            EagleEyeLogUtil.log(resourceWrapper.getName(), e.getClass().getSimpleName(), e.getRuleLimitApp(), context.getOrigin(), count);
             throw e;
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);

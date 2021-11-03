@@ -39,17 +39,13 @@ public final class SlotChainProvider {
         if (slotChainBuilder != null) {
             return slotChainBuilder.build();
         }
-
-        // Resolve the slot chain builder SPI.
+        // 通过SPI机制加载Slot Chain加载sentinel-core包下的META-INF/services中对应的文件里的类
         slotChainBuilder = SpiLoader.loadFirstInstanceOrDefault(SlotChainBuilder.class, DefaultSlotChainBuilder.class);
-
-        if (slotChainBuilder == null) {
-            // Should not go through here.
+        if (slotChainBuilder == null) {// Should not go through here.
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
             slotChainBuilder = new DefaultSlotChainBuilder();
         } else {
-            RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: "
-                + slotChainBuilder.getClass().getCanonicalName());
+            RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: " + slotChainBuilder.getClass().getCanonicalName());
         }
         return slotChainBuilder.build();
     }

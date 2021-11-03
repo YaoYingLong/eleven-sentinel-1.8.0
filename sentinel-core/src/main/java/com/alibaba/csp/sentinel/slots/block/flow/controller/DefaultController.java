@@ -46,10 +46,10 @@ public class DefaultController implements TrafficShapingController {
     }
 
     @Override
-    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
-        int curCount = avgUsedTokens(node);
-        if (curCount + acquireCount > count) {
-            if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) { // 快速失败
+        int curCount = avgUsedTokens(node); // 从当前时间窗口中取统计指标数据
+        if (curCount + acquireCount > count) { // 若当前qps大于count阈值返回false，校验不通过
+            if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) { // prioritized一般传入的false
                 long currentTime;
                 long waitInMs;
                 currentTime = TimeUtil.currentTimeMillis();
@@ -58,7 +58,6 @@ public class DefaultController implements TrafficShapingController {
                     node.addWaitingRequest(currentTime + waitInMs, acquireCount);
                     node.addOccupiedPass(acquireCount);
                     sleep(waitInMs);
-
                     // PriorityWaitException indicates that the request will pass after waiting for {@link @waitInMs}.
                     throw new PriorityWaitException(waitInMs);
                 }
@@ -72,6 +71,7 @@ public class DefaultController implements TrafficShapingController {
         if (node == null) {
             return DEFAULT_AVG_USED_TOKENS;
         }
+        // 若阈值类型是QPS则返回QPS若是线程数则返回当前线程数
         return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
     }
 

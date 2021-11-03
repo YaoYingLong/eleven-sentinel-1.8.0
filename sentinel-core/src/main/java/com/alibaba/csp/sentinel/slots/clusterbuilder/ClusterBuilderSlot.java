@@ -73,8 +73,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
     private volatile ClusterNode clusterNode = null;
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
         if (clusterNode == null) {
             synchronized (lock) {
@@ -84,7 +83,6 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                     HashMap<ResourceWrapper, ClusterNode> newMap = new HashMap<>(Math.max(clusterNodeMap.size(), 16));
                     newMap.putAll(clusterNodeMap);
                     newMap.put(node.getId(), clusterNode);
-
                     clusterNodeMap = newMap;
                 }
             }

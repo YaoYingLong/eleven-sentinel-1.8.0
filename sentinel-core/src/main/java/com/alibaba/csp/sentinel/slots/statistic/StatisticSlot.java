@@ -52,16 +52,13 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
-        try {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
+        try { // 用于存储资源的统计信息以及调用者信息，例如该资源的RT、QPS、threadCount等等，这些信息将作为多维度限流降级的依据
             // Do some checking.
-            fireEntry(context, resourceWrapper, node, count, prioritized, args);
-
+            fireEntry(context, resourceWrapper, node, count, prioritized, args); // 触发下移规则调用
             // Request passed, add thread count and pass count.
-            node.increaseThreadNum();
-            node.addPassRequest(count);
-
+            node.increaseThreadNum(); // 当前调用线程数加一
+            node.addPassRequest(count); // 增加规则校验通过调用数，调用滑动时间窗口计数算法请求
             if (context.getCurEntry().getOriginNode() != null) {
                 // Add count for origin node.
                 context.getCurEntry().getOriginNode().increaseThreadNum();
@@ -73,7 +70,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 Constants.ENTRY_NODE.increaseThreadNum();
                 Constants.ENTRY_NODE.addPassRequest(count);
             }
-
             // Handle pass event with registered entry callback handlers.
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onPass(context, resourceWrapper, node, count, args);
@@ -84,7 +80,6 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 // Add count for origin node.
                 context.getCurEntry().getOriginNode().increaseThreadNum();
             }
-
             if (resourceWrapper.getEntryType() == EntryType.IN) {
                 // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseThreadNum();
@@ -96,9 +91,8 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         } catch (BlockException e) {
             // Blocked, set block exception to current entry.
             context.getCurEntry().setBlockError(e);
-
             // Add block count.
-            node.increaseBlockQps(count);
+            node.increaseBlockQps(count); // 增加被规则限流的调用数
             if (context.getCurEntry().getOriginNode() != null) {
                 context.getCurEntry().getOriginNode().increaseBlockQps(count);
             }
@@ -107,17 +101,14 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 // Add count for global inbound entry node for global statistics.
                 Constants.ENTRY_NODE.increaseBlockQps(count);
             }
-
             // Handle block event with registered entry callback handlers.
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
-
             throw e;
         } catch (Throwable e) {
             // Unexpected internal error, set error to current entry.
             context.getCurEntry().setError(e);
-
             throw e;
         }
     }
@@ -125,15 +116,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void exit(Context context, ResourceWrapper resourceWrapper, int count, Object... args) {
         Node node = context.getCurNode();
-
         if (context.getCurEntry().getBlockError() == null) {
             // Calculate response time (use completeStatTime as the time of completion).
-            long completeStatTime = TimeUtil.currentTimeMillis();
+            long completeStatTime = TimeUtil.currentTimeMillis(); // 当前完成时间
             context.getCurEntry().setCompleteTimestamp(completeStatTime);
-            long rt = completeStatTime - context.getCurEntry().getCreateTimestamp();
-
+            long rt = completeStatTime - context.getCurEntry().getCreateTimestamp(); // 调用执行时间RT
             Throwable error = context.getCurEntry().getError();
-
             // Record response time and success count.
             recordCompleteFor(node, count, rt, error);
             recordCompleteFor(context.getCurEntry().getOriginNode(), count, rt, error);
@@ -141,13 +129,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 recordCompleteFor(Constants.ENTRY_NODE, count, rt, error);
             }
         }
-
         // Handle exit event with registered exit callback handlers.
         Collection<ProcessorSlotExitCallback> exitCallbacks = StatisticSlotCallbackRegistry.getExitCallbacks();
         for (ProcessorSlotExitCallback handler : exitCallbacks) {
             handler.onExit(context, resourceWrapper, count, args);
         }
-
         fireExit(context, resourceWrapper, count);
     }
 
@@ -155,11 +141,10 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (node == null) {
             return;
         }
-        node.addRtAndSuccess(rt, batchCount);
-        node.decreaseThreadNum();
-
+        node.addRtAndSuccess(rt, batchCount); // 增加调用完成数和调用执行时间RT
+        node.decreaseThreadNum(); // 减少当前调用线程数
         if (error != null && !(error instanceof BlockException)) {
-            node.increaseExceptionQps(batchCount);
+            node.increaseExceptionQps(batchCount); // 增加异常调用数
         }
     }
 }

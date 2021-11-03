@@ -34,9 +34,8 @@ import java.util.List;
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
     @Override
-    public ProcessorSlotChain build() {
+    public ProcessorSlotChain build() { // 构建资源的slot校验链条，每个资源都有自己独立的校验链条，类似Netty的pipeline
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
-
         // Note: the instances of ProcessorSlot should be different, since they are not stateless.
         List<ProcessorSlot> sortedSlotList = SpiLoader.loadPrototypeInstanceListSorted(ProcessorSlot.class);
         for (ProcessorSlot slot : sortedSlotList) {
@@ -44,10 +43,8 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
                 continue;
             }
-
             chain.addLast((AbstractLinkedProcessorSlot<?>) slot);
         }
-
         return chain;
     }
 }

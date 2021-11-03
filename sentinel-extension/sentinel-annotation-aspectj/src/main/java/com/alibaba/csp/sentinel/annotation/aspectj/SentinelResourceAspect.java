@@ -36,27 +36,27 @@ import java.lang.reflect.Method;
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
-    public void sentinelResourceAnnotationPointcut() {
+    public void sentinelResourceAnnotationPointcut() { // 切点，对所有带有@SentinelResource注解的方法进行拦截
     }
 
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
         Method originMethod = resolveMethod(pjp);
-
-        SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
+        SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class); // 获取方法上的@SentinelResource注解
         if (annotation == null) {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
         String resourceName = getResourceName(annotation.value(), originMethod); // 获取注解上配置的资源名称
-        EntryType entryType = annotation.entryType();
-        int resourceType = annotation.resourceType();
+        EntryType entryType = annotation.entryType(); // 默认值为OUT
+        int resourceType = annotation.resourceType(); // 默认值为0
         Entry entry = null;
         try {
+            // 申请一个entry，若申请成功，则说明没有被限流，否则抛出BlockException表示已被限流
             entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
             Object result = pjp.proceed();
             return result;
-        } catch (BlockException ex) {
+        } catch (BlockException ex) { // 规则校验异常，处理注解属性blockHandler中配置的方法
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
@@ -66,7 +66,7 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             }
             if (exceptionBelongsTo(ex, annotation.exceptionsToTrace())) {
                 traceException(ex);
-                return handleFallback(pjp, annotation, ex);
+                return handleFallback(pjp, annotation, ex); // 处理抛出的业务异常，处理fallback方法
             }
 
             // No fallback function can handle the exception, so throw it out.

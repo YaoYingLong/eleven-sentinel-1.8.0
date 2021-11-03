@@ -63,7 +63,7 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
     }
 
     @Override
-    public void onRequestComplete(Context context) {
+    public void onRequestComplete(Context context) { // 调用异常数及比例判断逻辑
         Entry entry = context.getCurEntry();
         if (entry == null) {
             return;

@@ -41,14 +41,13 @@ import com.alibaba.csp.sentinel.util.function.Function;
  */
 public class FlowRuleChecker {
 
-    public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource,
-                          Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
+    public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
         if (ruleProvider == null || resource == null) {
             return;
         }
-        Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
+        Collection<FlowRule> rules = ruleProvider.apply(resource.getName()); // 获取资源相关的校验规则
         if (rules != null) {
-            for (FlowRule rule : rules) {
+            for (FlowRule rule : rules) { // 对资源逐条校验每个规则
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
@@ -61,50 +60,41 @@ public class FlowRuleChecker {
         return canPassCheck(rule, context, node, acquireCount, false);
     }
 
-    public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                                    boolean prioritized) {
+    public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount, boolean prioritized) {
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
             return true;
         }
-
-        if (rule.isClusterMode()) {
+        if (rule.isClusterMode()) { // 集群限流规则
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
-
-        return passLocalCheck(rule, context, node, acquireCount, prioritized);
+        return passLocalCheck(rule, context, node, acquireCount, prioritized); // 单机限流规则
     }
 
-    private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
-                                          boolean prioritized) {
+    private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount, boolean prioritized) {
         Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);
         if (selectedNode == null) {
             return true;
         }
-
         return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {
         String refResource = rule.getRefResource();
         int strategy = rule.getStrategy();
-
         if (StringUtil.isEmpty(refResource)) {
             return null;
         }
-
         if (strategy == RuleConstant.STRATEGY_RELATE) {
             return ClusterBuilderSlot.getClusterNode(refResource);
         }
-
         if (strategy == RuleConstant.STRATEGY_CHAIN) {
             if (!refResource.equals(context.getName())) {
                 return null;
             }
             return node;
         }
-        // No node.
-        return null;
+        return null;  // No node.
     }
 
     private static boolean filterOrigin(String origin) {
@@ -117,27 +107,23 @@ public class FlowRuleChecker {
         String limitApp = rule.getLimitApp();
         int strategy = rule.getStrategy();
         String origin = context.getOrigin();
-
         if (limitApp.equals(origin) && filterOrigin(origin)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Matches limit origin, return origin statistic node.
                 return context.getOriginNode();
             }
-
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 // Return the cluster node.
                 return node.getClusterNode();
             }
-
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
             && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
             if (strategy == RuleConstant.STRATEGY_DIRECT) {
                 return context.getOriginNode();
             }
-
             return selectReferenceNode(rule, context, node);
         }
 

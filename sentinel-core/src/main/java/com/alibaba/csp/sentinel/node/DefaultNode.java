@@ -107,13 +107,13 @@ public class DefaultNode extends StatisticNode {
     }
 
     @Override
-    public void increaseBlockQps(int count) {
+    public void increaseBlockQps(int count) { // 增加被规则限流的调用数
         super.increaseBlockQps(count);
         this.clusterNode.increaseBlockQps(count);
     }
 
     @Override
-    public void increaseExceptionQps(int count) {
+    public void increaseExceptionQps(int count) { // 增加抛出非限流Block异常调用数
         super.increaseExceptionQps(count);
         this.clusterNode.increaseExceptionQps(count);
     }

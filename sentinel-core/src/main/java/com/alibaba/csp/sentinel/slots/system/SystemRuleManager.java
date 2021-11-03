@@ -293,38 +293,32 @@ public final class SystemRuleManager {
         }
         // Ensure the checking switch is on.
         if (!checkSystemStatus.get()) {
-            return;
+            return; // 若系统校验资源规则开关是关闭的
         }
-
         // for inbound traffic only
         if (resourceWrapper.getEntryType() != EntryType.IN) {
-            return;
+            return; // 系统资源校验规则只对EntryType.IN入模式生效
         }
-
         // total qps
         double currentQps = Constants.ENTRY_NODE == null ? 0.0 : Constants.ENTRY_NODE.successQps();
         if (currentQps > qps) {
             throw new SystemBlockException(resourceWrapper.getName(), "qps");
         }
-
         // total thread
         int currentThread = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.curThreadNum();
         if (currentThread > maxThread) {
             throw new SystemBlockException(resourceWrapper.getName(), "thread");
         }
-
         double rt = Constants.ENTRY_NODE == null ? 0 : Constants.ENTRY_NODE.avgRt();
         if (rt > maxRt) {
             throw new SystemBlockException(resourceWrapper.getName(), "rt");
         }
-
         // load. BBR algorithm.
         if (highestSystemLoadIsSet && getCurrentSystemAvgLoad() > highestSystemLoad) {
             if (!checkBbr(currentThread)) {
                 throw new SystemBlockException(resourceWrapper.getName(), "load");
             }
         }
-
         // cpu usage
         if (highestCpuUsageIsSet && getCurrentCpuUsage() > highestCpuUsage) {
             throw new SystemBlockException(resourceWrapper.getName(), "cpu");
@@ -332,8 +326,7 @@ public final class SystemRuleManager {
     }
 
     private static boolean checkBbr(int currentThread) {
-        if (currentThread > 1 &&
-            currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
+        if (currentThread > 1 && currentThread > Constants.ENTRY_NODE.maxSuccessQps() * Constants.ENTRY_NODE.minRt() / 1000) {
             return false;
         }
         return true;

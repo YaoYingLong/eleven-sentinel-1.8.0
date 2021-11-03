@@ -80,18 +80,15 @@ public abstract class AbstractSentinelAspectSupport {
         return MethodUtil.resolveMethodName(method);
     }
 
-    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation, Throwable ex)
-        throws Throwable {
+    protected Object handleFallback(ProceedingJoinPoint pjp, SentinelResource annotation, Throwable ex) throws Throwable {
         return handleFallback(pjp, annotation.fallback(), annotation.defaultFallback(), annotation.fallbackClass(), ex);
     }
 
-    protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback,
-                                    Class<?>[] fallbackClass, Throwable ex) throws Throwable {
+    protected Object handleFallback(ProceedingJoinPoint pjp, String fallback, String defaultFallback, Class<?>[] fallbackClass, Throwable ex) throws Throwable {
         Object[] originArgs = pjp.getArgs();
-
         // Execute fallback function if configured.
-        Method fallbackMethod = extractFallbackMethod(pjp, fallback, fallbackClass);
-        if (fallbackMethod != null) {
+        Method fallbackMethod = extractFallbackMethod(pjp, fallback, fallbackClass); // 获取配置的fallback方法
+        if (fallbackMethod != null) { // 若配置了fallback方法则走下面的逻辑
             // Construct args.
             int paramCount = fallbackMethod.getParameterTypes().length;
             Object[] args;
@@ -101,7 +98,6 @@ public abstract class AbstractSentinelAspectSupport {
                 args = Arrays.copyOf(originArgs, originArgs.length + 1);
                 args[args.length - 1] = ex;
             }
-
             try {
                 if (isStatic(fallbackMethod)) {
                     return fallbackMethod.invoke(null, args);
@@ -116,8 +112,7 @@ public abstract class AbstractSentinelAspectSupport {
         return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
     }
 
-    protected Object handleDefaultFallback(ProceedingJoinPoint pjp, String defaultFallback,
-                                           Class<?>[] fallbackClass, Throwable ex) throws Throwable {
+    protected Object handleDefaultFallback(ProceedingJoinPoint pjp, String defaultFallback, Class<?>[] fallbackClass, Throwable ex) throws Throwable {
         // Execute the default fallback function if configured.
         Method fallbackMethod = extractDefaultFallbackMethod(pjp, defaultFallback, fallbackClass);
         if (fallbackMethod != null) {

@@ -307,8 +307,7 @@ public class SphU {
      * @throws BlockException if the block criteria is met (e.g. metric exceeded the threshold of any rules)
      * @since 1.7.0
      */
-    public static Entry entry(String name, int resourceType, EntryType trafficType, Object[] args)
-        throws BlockException {
+    public static Entry entry(String name, int resourceType, EntryType trafficType, Object[] args) throws BlockException {
         return Env.sph.entryWithType(name, resourceType, trafficType, 1, args);
     }
 

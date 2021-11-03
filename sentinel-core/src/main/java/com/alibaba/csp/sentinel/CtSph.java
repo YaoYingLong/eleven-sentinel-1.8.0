@@ -48,8 +48,7 @@ public class CtSph implements Sph {
      * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
      */
-    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap
-        = new HashMap<ResourceWrapper, ProcessorSlotChain>();
+    private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap = new HashMap<ResourceWrapper, ProcessorSlotChain>();
 
     private static final Object LOCK = new Object();
 
@@ -114,8 +113,7 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
-    private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
-        throws BlockException {
+    private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args) throws BlockException {
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
@@ -129,25 +127,22 @@ public class CtSph implements Sph {
         }
 
         // Global switch is close, no rule checking will do.
-        if (!Constants.ON) {
+        if (!Constants.ON) { // 若全局规则开关是关闭的，则不做规则校验
             return new CtEntry(resourceWrapper, null, context);
         }
-
-        ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
-
+        ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper); // 获取规则校验链，规则链是根据其上的@SpiOrder进行排序的
         /*
          * Means amount of resources (slot chain) exceeds {@link Constants.MAX_SLOT_CHAIN_SIZE},
          * so no rule checking will be done.
          */
-        if (chain == null) {
+        if (chain == null) { // 若规则校验链为null，则不做规则校验
             return new CtEntry(resourceWrapper, null, context);
         }
-
         Entry e = new CtEntry(resourceWrapper, chain, context);
-        try {
+        try { // 逐个调用Slot校验链条中的每个校验规则的entry逻辑
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
-            e.exit(count, args);
+            e.exit(count, args); // 逐个调用slot校验链条中的每一个校验规则的退出exit逻辑
             throw e1;
         } catch (Throwable e1) {
             // This should not happen, unless there are errors existing in Sentinel internal.
@@ -199,12 +194,10 @@ public class CtSph implements Sph {
                 if (chain == null) {
                     // Entry size limit.
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
-                        return null;
+                        return null; // 若chainMap中的规则链数量超过了6000
                     }
-
                     chain = SlotChainProvider.newSlotChain();
-                    Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
-                        chainMap.size() + 1);
+                    Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(chainMap.size() + 1);
                     newMap.putAll(chainMap);
                     newMap.put(resourceWrapper, chain);
                     chainMap = newMap;
@@ -334,17 +327,22 @@ public class CtSph implements Sph {
         return entryWithPriority(resource, count, prioritized, args);
     }
 
+    /**
+     * @param name         资源名称
+     * @param resourceType 默认值为0
+     * @param entryType    默认值为OUT
+     * @param count        固定为1
+     * @param args         被@SentinelResource注解标注的方法的参数列表
+     */
     @Override
-    public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args)
-        throws BlockException {
+    public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args) throws BlockException {
         return entryWithType(name, resourceType, entryType, count, false, args);
     }
 
     @Override
-    public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
-                               Object[] args) throws BlockException {
+    public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized, Object[] args) throws BlockException {
         StringResourceWrapper resource = new StringResourceWrapper(name, entryType, resourceType);
-        return entryWithPriority(resource, count, prioritized, args);
+        return entryWithPriority(resource, count, prioritized, args); // prioritized固定传入的false，count固定传入1
     }
 
     @Override

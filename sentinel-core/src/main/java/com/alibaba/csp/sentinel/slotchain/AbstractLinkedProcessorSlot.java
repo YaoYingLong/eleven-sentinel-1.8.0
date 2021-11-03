@@ -26,16 +26,14 @@ public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T>
     private AbstractLinkedProcessorSlot<?> next = null;
 
     @Override
-    public void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
-        throws Throwable {
+    public void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args) throws Throwable {
         if (next != null) {
             next.transformEntry(context, resourceWrapper, obj, count, prioritized, args);
         }
     }
 
     @SuppressWarnings("unchecked")
-    void transformEntry(Context context, ResourceWrapper resourceWrapper, Object o, int count, boolean prioritized, Object... args)
-        throws Throwable {
+    void transformEntry(Context context, ResourceWrapper resourceWrapper, Object o, int count, boolean prioritized, Object... args) throws Throwable {
         T t = (T)o;
         entry(context, resourceWrapper, t, count, prioritized, args);
     }

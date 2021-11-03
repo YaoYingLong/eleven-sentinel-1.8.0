@@ -29,7 +29,7 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
 public class BucketLeapArray extends LeapArray<MetricBucket> {
 
     public BucketLeapArray(int sampleCount, int intervalInMs) {
-        super(sampleCount, intervalInMs);
+        super(sampleCount, intervalInMs); // 初始化一个跨度为1分钟包含60个1000ms时间窗口对象
     }
 
     @Override

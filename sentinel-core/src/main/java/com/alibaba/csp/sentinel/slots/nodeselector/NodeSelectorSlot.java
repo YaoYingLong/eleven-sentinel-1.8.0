@@ -152,6 +152,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * The answer is all {@link DefaultNode}s with same resource name share one
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
          */
+        // 负责收集资源路径，并将这些资源的调用路径，以树状结构存储起来，用于根据调用路径来限流降级
         DefaultNode node = map.get(context.getName());
         if (node == null) {
             synchronized (this) {
@@ -168,7 +169,6 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
             }
         }
-
         context.setCurNode(node);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }

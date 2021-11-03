@@ -37,10 +37,8 @@ import com.alibaba.csp.sentinel.spi.SpiOrder;
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
-                      boolean prioritized, Object... args) throws Throwable {
+    public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args) throws Throwable {
         performChecking(context, resourceWrapper);
-
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 

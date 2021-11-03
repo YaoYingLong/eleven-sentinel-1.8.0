@@ -111,12 +111,10 @@ public class WarmUpController implements TrafficShapingController {
     }
 
     @Override
-    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) { // 通过令牌桶算法来完成预热
         long passQps = (long) node.passQps();
-
         long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
-
         // 开始计算它的斜率
         // 如果进入了警戒线，开始调整他的qps
         long restToken = storedTokens.get();
@@ -133,7 +131,6 @@ public class WarmUpController implements TrafficShapingController {
                 return true;
             }
         }
-
         return false;
     }
 

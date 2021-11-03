@@ -65,7 +65,7 @@ public abstract class LeapArray<T> {
         this.windowLengthInMs = intervalInMs / sampleCount; // 时间窗口长度为500ms
         this.intervalInMs = intervalInMs;
         this.sampleCount = sampleCount;
-        this.array = new AtomicReferenceArray<>(sampleCount); // 数组长度为2
+        this.array = new AtomicReferenceArray<>(sampleCount); // 数组长度为2，放时间窗口的数组
     }
 
     /**
@@ -73,7 +73,7 @@ public abstract class LeapArray<T> {
      *
      * @return the bucket at current timestamp
      */
-    public WindowWrap<T> currentWindow() {
+    public WindowWrap<T> currentWindow() { // 根据当前时间定位到具体的窗格
         return currentWindow(TimeUtil.currentTimeMillis());
     }
 
@@ -117,7 +117,7 @@ public abstract class LeapArray<T> {
 
         int idx = calculateTimeIdx(timeMillis); // 根据当前时间计算当前计数应该落在哪个小窗格中
         // Calculate current bucket start time.
-        long windowStart = calculateWindowStart(timeMillis); // 计算当前小窗口开始时间
+        long windowStart = calculateWindowStart(timeMillis); // 计算当前时间窗口的起始时间位置
 
         /*
          * Get bucket item at given time from the array.
@@ -127,8 +127,8 @@ public abstract class LeapArray<T> {
          * (3) Bucket is deprecated, then reset current bucket and clean all deprecated buckets.
          */
         while (true) {
-            WindowWrap<T> old = array.get(idx);
-            if (old == null) {
+            WindowWrap<T> old = array.get(idx); // 从时间窗口数组中获取一句当前时间计算的下标对应的old时间窗口
+            if (old == null) { // 若old时间窗口为空，则新建一个时间窗口，并放入时间窗口数组中
                 /*
                  *     B0       B1      B2    NULL      B4
                  * ||_______|_______|_______|_______|_______||___
@@ -161,7 +161,7 @@ public abstract class LeapArray<T> {
                  * If current {@code windowStart} is equal to the start timestamp of old bucket,
                  * that means the time is within the bucket, so directly return the bucket.
                  */
-                return old;
+                return old; // 若old时间窗口起始时间跟依据当前时间计算出的时间窗口起始时间相同，则当前时间应该落在old时间窗口内，直接返回old时间窗
             } else if (windowStart > old.windowStart()) {
                 /*
                  *   (old)
@@ -181,7 +181,7 @@ public abstract class LeapArray<T> {
                  * bucket is deprecated, so in most cases it won't lead to performance loss.
                  */
                 if (updateLock.tryLock()) {
-                    try {
+                    try { // 若依据当前时间算出的时间窗口起始时间大于old时间窗口的起始时间，则将old时间窗口重置，变为当前时间应该落入的时间窗口
                         // Successfully get the update lock, now we reset the bucket.
                         return resetWindowTo(old, windowStart);
                     } finally {

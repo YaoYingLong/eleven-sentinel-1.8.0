@@ -251,21 +251,21 @@ public class StatisticNode implements Node {
 
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
-        rollingCounterInSecond.addSuccess(successCount);
-        rollingCounterInSecond.addRT(rt);
+        rollingCounterInSecond.addSuccess(successCount); // 增加调用完成数
+        rollingCounterInSecond.addRT(rt); // 调用执行时间RT
 
-        rollingCounterInMinute.addSuccess(successCount);
-        rollingCounterInMinute.addRT(rt);
+        rollingCounterInMinute.addSuccess(successCount); // 增加调用完成数
+        rollingCounterInMinute.addRT(rt); // 调用执行时间RT
     }
 
     @Override
-    public void increaseBlockQps(int count) {
+    public void increaseBlockQps(int count) { // 增加被规则限流的调用数
         rollingCounterInSecond.addBlock(count);
         rollingCounterInMinute.addBlock(count);
     }
 
     @Override
-    public void increaseExceptionQps(int count) {
+    public void increaseExceptionQps(int count) { // 增加异常调用数
         rollingCounterInSecond.addException(count);
         rollingCounterInMinute.addException(count);
     }

@@ -71,7 +71,7 @@ public class MetricBucket {
     }
 
     public MetricBucket add(MetricEvent event, long n) {
-        counters[event.ordinal()].add(n);
+        counters[event.ordinal()].add(n); // 时间窗口中请求数据统计实际放在一个counter数组中，不停的下标代表不同的数据统计指标
         return this;
     }
 
@@ -104,7 +104,7 @@ public class MetricBucket {
     }
 
     public void addPass(int n) {
-        add(MetricEvent.PASS, n);
+        add(MetricEvent.PASS, n); // 增加时间窗口中的请求通过数
     }
 
     public void addOccupiedPass(int n) {

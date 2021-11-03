@@ -43,7 +43,7 @@ public class RateLimiterController implements TrafficShapingController {
     }
 
     @Override
-    public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+    public boolean canPass(Node node, int acquireCount, boolean prioritized) { // 使用漏桶算法
         // Pass when acquire count is less or equal than 0.
         if (acquireCount <= 0) {
             return true;
@@ -53,14 +53,11 @@ public class RateLimiterController implements TrafficShapingController {
         if (count <= 0) {
             return false;
         }
-
         long currentTime = TimeUtil.currentTimeMillis();
         // Calculate the interval between every two requests.
         long costTime = Math.round(1.0 * (acquireCount) / count * 1000);
-
         // Expected pass time of this request.
         long expectedTime = costTime + latestPassedTime.get();
-
         if (expectedTime <= currentTime) {
             // Contention may exist here, but it's okay.
             latestPassedTime.set(currentTime);

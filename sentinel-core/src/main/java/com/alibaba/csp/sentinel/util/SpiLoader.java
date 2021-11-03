@@ -227,14 +227,12 @@ public final class SpiLoader {
         try {
             // Not use SERVICE_LOADER_MAP, to make sure the instances loaded are different.
             ServiceLoader<T> serviceLoader = ServiceLoaderUtil.getServiceLoader(clazz);
-
             List<SpiOrderWrapper<T>> orderWrappers = new ArrayList<>();
             for (T spi : serviceLoader) {
                 int order = SpiOrderResolver.resolveOrder(spi);
                 // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
-                SpiOrderResolver.insertSorted(orderWrappers, spi, order);
-                RecordLog.debug("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(),
-                        spi.getClass().getCanonicalName(), order);
+                SpiOrderResolver.insertSorted(orderWrappers, spi, order); // 对加载的Slot进行排序，约小约排在前面
+                RecordLog.debug("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(), spi.getClass().getCanonicalName(), order);
             }
             List<T> list = new ArrayList<>(orderWrappers.size());
             for (int i = 0; i < orderWrappers.size(); i++) {
@@ -253,7 +251,7 @@ public final class SpiLoader {
             int idx = 0;
             for (; idx < list.size(); idx++) {
                 if (list.get(idx).getOrder() > order) {
-                    break;
+                    break; // 根据@SpiOrder注解中配置的值来进行比较排序
                 }
             }
             list.add(idx, new SpiOrderWrapper<>(order, spi));
