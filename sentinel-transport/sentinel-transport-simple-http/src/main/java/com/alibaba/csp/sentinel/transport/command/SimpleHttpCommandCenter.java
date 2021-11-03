@@ -15,6 +15,15 @@
  */
 package com.alibaba.csp.sentinel.transport.command;
 
+import com.alibaba.csp.sentinel.command.CommandHandler;
+import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
+import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
+import com.alibaba.csp.sentinel.transport.CommandCenter;
+import com.alibaba.csp.sentinel.transport.command.http.HttpEventTask;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
+import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
+import com.alibaba.csp.sentinel.util.StringUtil;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,23 +31,7 @@ import java.net.SocketException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.alibaba.csp.sentinel.command.CommandHandler;
-import com.alibaba.csp.sentinel.command.CommandHandlerProvider;
-import com.alibaba.csp.sentinel.concurrent.NamedThreadFactory;
-import com.alibaba.csp.sentinel.transport.log.CommandCenterLog;
-import com.alibaba.csp.sentinel.transport.CommandCenter;
-import com.alibaba.csp.sentinel.transport.command.http.HttpEventTask;
-import com.alibaba.csp.sentinel.transport.config.TransportConfig;
-import com.alibaba.csp.sentinel.util.StringUtil;
+import java.util.concurrent.*;
 
 /***
  * The simple command center provides service to exchange information.
@@ -46,9 +39,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  * @author youji.zj
  */
 public class SimpleHttpCommandCenter implements CommandCenter {
-
     private static final int PORT_UNINITIALIZED = -1;
-
     private static final int DEFAULT_SERVER_SO_TIMEOUT = 3000;
     private static final int DEFAULT_PORT = 8719;
 
@@ -56,8 +47,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     private static final Map<String, CommandHandler> handlerMap = new ConcurrentHashMap<String, CommandHandler>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private ExecutorService executor = Executors.newSingleThreadExecutor(
-        new NamedThreadFactory("sentinel-command-center-executor"));
+    private ExecutorService executor = Executors.newSingleThreadExecutor(new NamedThreadFactory("sentinel-command-center-executor"));
     private ExecutorService bizExecutor;
 
     private ServerSocket socketReference;
@@ -67,26 +57,24 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     public void beforeStart() throws Exception {
         // Register handlers
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
-        registerCommands(handlers);
+        registerCommands(handlers); // 注册所有实现了CommandHandler的SPI接口
     }
 
     @Override
     public void start() throws Exception {
         int nThreads = Runtime.getRuntime().availableProcessors();
         this.bizExecutor = new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<Runnable>(10),
-            new NamedThreadFactory("sentinel-command-center-service-executor"),
-            new RejectedExecutionHandler() {
-                @Override
-                public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                    CommandCenterLog.info("EventTask rejected");
-                    throw new RejectedExecutionException();
-                }
-            });
-
+                new ArrayBlockingQueue<Runnable>(10),
+                new NamedThreadFactory("sentinel-command-center-service-executor"),
+                new RejectedExecutionHandler() {
+                    @Override
+                    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                        CommandCenterLog.info("EventTask rejected");
+                        throw new RejectedExecutionException();
+                    }
+                });
         Runnable serverInitTask = new Runnable() {
             int port;
-
             {
                 try {
                     port = Integer.parseInt(TransportConfig.getPort());
@@ -94,12 +82,10 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                     port = DEFAULT_PORT;
                 }
             }
-
             @Override
             public void run() {
                 boolean success = false;
                 ServerSocket serverSocket = getServerSocketFromBasePort(port);
-
                 if (serverSocket != null) {
                     CommandCenterLog.info("[CommandCenter] Begin listening at port " + serverSocket.getLocalPort());
                     socketReference = serverSocket;
@@ -109,17 +95,13 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 } else {
                     CommandCenterLog.info("[CommandCenter] chooses port fail, http command center will not work");
                 }
-
                 if (!success) {
                     port = PORT_UNINITIALIZED;
                 }
-
                 TransportConfig.setRuntimePort(port);
                 executor.shutdown();
             }
-
         };
-
         new Thread(serverInitTask).start();
     }
 
@@ -172,14 +154,11 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     }
 
     class ServerThread extends Thread {
-
         private ServerSocket serverSocket;
-
         ServerThread(ServerSocket s) {
             this.serverSocket = s;
             setName("sentinel-courier-server-accept-thread");
         }
-
         @Override
         public void run() {
             while (true) {
@@ -198,11 +177,9 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                             CommandCenterLog.info("Error when closing an opened socket", e1);
                         }
                     }
-                    try {
-                        // In case of infinite log.
+                    try {// In case of infinite log.
                         Thread.sleep(10);
-                    } catch (InterruptedException e1) {
-                        // Indicates the task should stop.
+                    } catch (InterruptedException e1) {// Indicates the task should stop.
                         break;
                     }
                 }

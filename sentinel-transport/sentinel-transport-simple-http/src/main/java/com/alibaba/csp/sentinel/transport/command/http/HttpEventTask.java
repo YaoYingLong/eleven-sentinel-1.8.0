@@ -69,32 +69,25 @@ public class HttpEventTask implements Runnable {
         if (socket == null) {
             return;
         }
-
         PrintWriter printWriter = null;
         InputStream inputStream = null;
         try {
             long start = System.currentTimeMillis();
             inputStream = new BufferedInputStream(socket.getInputStream());
             OutputStream outputStream = socket.getOutputStream();
-
             printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName(SentinelConfig.charset())));
-
             String firstLine = readLine(inputStream);
             CommandCenterLog.info("[SimpleHttpCommandCenter] Socket income: " + firstLine + ", addr: " + socket.getInetAddress());
-            CommandRequest request = processQueryString(firstLine);
-
-            if (firstLine.length() > 4 && StringUtil.equalsIgnoreCase("POST", firstLine.substring(0, 4))) {
-                // Deal with post method
-                processPostRequest(inputStream, request);
+            CommandRequest request = processQueryString(firstLine); // 参数解析
+            if (firstLine.length() > 4 && StringUtil.equalsIgnoreCase("POST", firstLine.substring(0, 4))) {// Deal with post method
+                processPostRequest(inputStream, request); // POST请求参数解析
             }
-
             // Validate the target command.
             String commandName = HttpCommandUtils.getTarget(request);
             if (StringUtil.isBlank(commandName)) {
                 writeResponse(printWriter, StatusCode.BAD_REQUEST, INVALID_COMMAND_MESSAGE);
                 return;
             }
-
             // Find the matching command handler.
             CommandHandler<?> commandHandler = SimpleHttpCommandCenter.getHandler(commandName);
             if (commandHandler != null) {
@@ -104,10 +97,8 @@ public class HttpEventTask implements Runnable {
                 // No matching command handler.
                 writeResponse(printWriter, StatusCode.BAD_REQUEST, "Unknown command `" + commandName + '`');
             }
-
             long cost = System.currentTimeMillis() - start;
-            CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + firstLine
-                + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
+            CommandCenterLog.info("[SimpleHttpCommandCenter] Deal a socket task: " + firstLine + ", address: " + socket.getInetAddress() + ", time cost: " + cost + " ms");
         } catch (RequestException e) {
             writeResponse(printWriter, e.getStatusCode(), e.getMessage());
         } catch (Throwable e) {

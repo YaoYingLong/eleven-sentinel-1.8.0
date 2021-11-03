@@ -32,9 +32,11 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
     /**
      * {@code <machine, <id, rule>>}
      */
+    // 通过客户端服务名称、IP、端口以及服务端生成的ID来嵌套映射存储发布的规则
     private Map<MachineInfo, Map<Long, T>> machineRules = new ConcurrentHashMap<>(16);
+    // 通过服务端生成的ID映射存储发布的规则
     private Map<Long, T> allRules = new ConcurrentHashMap<>(16);
-
+    // 通过客户端服务名称映射存储发布的规则
     private Map<String, Map<Long, T>> appRules = new ConcurrentHashMap<>(16);
 
     private static final int MAX_RULES_SIZE = 10000;

@@ -51,14 +51,11 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
     public CommandResponse<String> handle(CommandRequest request) {
         // XXX from 1.7.2, force to fail when fastjson is older than 1.2.12
         // We may need a better solution on this.
-        if (VersionUtil.fromVersionString(JSON.VERSION) < FASTJSON_MINIMAL_VER) {
-            // fastjson too old
-            return CommandResponse.ofFailure(new RuntimeException("The \"fastjson-" + JSON.VERSION
-                    + "\" introduced in application is too old, you need fastjson-1.2.12 at least."));
+        if (VersionUtil.fromVersionString(JSON.VERSION) < FASTJSON_MINIMAL_VER) {// fastjson too old
+            return CommandResponse.ofFailure(new RuntimeException("The \"fastjson-" + JSON.VERSION + "\" introduced in application is too old, you need fastjson-1.2.12 at least."));
         }
         String type = request.getParam("type");
-        // rule data in get parameter
-        String data = request.getParam("data");
+        String data = request.getParam("data"); // rule data in get parameter
         if (StringUtil.isNotEmpty(data)) {
             try {
                 data = URLDecoder.decode(data, "utf-8");
@@ -67,11 +64,8 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
                 return CommandResponse.ofFailure(e, "decode rule data error");
             }
         }
-
         RecordLog.info("Receiving rule change (type: {}): {}", type, data);
-
         String result = "success";
-
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
             FlowRuleManager.loadRules(flowRules);

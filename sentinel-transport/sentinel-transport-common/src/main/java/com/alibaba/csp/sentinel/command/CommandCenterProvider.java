@@ -35,13 +35,11 @@ public final class CommandCenterProvider {
 
     private static void resolveInstance() {
         CommandCenter resolveCommandCenter = SpiLoader.loadHighestPriorityInstance(CommandCenter.class);
-
         if (resolveCommandCenter == null) {
             RecordLog.warn("[CommandCenterProvider] WARN: No existing CommandCenter found");
         } else {
             commandCenter = resolveCommandCenter;
-            RecordLog.info("[CommandCenterProvider] CommandCenter resolved: " + resolveCommandCenter.getClass()
-                .getCanonicalName());
+            RecordLog.info("[CommandCenterProvider] CommandCenter resolved: " + resolveCommandCenter.getClass().getCanonicalName());
         }
     }
 

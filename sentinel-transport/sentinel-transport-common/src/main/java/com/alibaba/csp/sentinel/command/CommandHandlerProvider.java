@@ -31,8 +31,7 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public class CommandHandlerProvider implements Iterable<CommandHandler> {
 
-    private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoaderUtil.getServiceLoader(
-        CommandHandler.class);
+    private final ServiceLoader<CommandHandler> serviceLoader = ServiceLoaderUtil.getServiceLoader(CommandHandler.class);
 
     /**
      * Get all command handlers annotated with {@link CommandMapping} with command name.
@@ -42,7 +41,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
     public Map<String, CommandHandler> namedHandlers() {
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
         for (CommandHandler handler : serviceLoader) {
-            String name = parseCommandName(handler);
+            String name = parseCommandName(handler); // 解析@CommandMapping注解中配置的接口名称
             if (!StringUtil.isEmpty(name)) {
                 map.put(name, handler);
             }
