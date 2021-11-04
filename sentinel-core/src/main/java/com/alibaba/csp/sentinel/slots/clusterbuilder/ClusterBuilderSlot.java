@@ -128,14 +128,12 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
             return null;
         }
         ClusterNode clusterNode = null;
-
         for (EntryType nodeType : EntryType.values()) {
             clusterNode = clusterNodeMap.get(new StringResourceWrapper(id, nodeType));
             if (clusterNode != null) {
                 break;
             }
         }
-
         return clusterNode;
     }
 

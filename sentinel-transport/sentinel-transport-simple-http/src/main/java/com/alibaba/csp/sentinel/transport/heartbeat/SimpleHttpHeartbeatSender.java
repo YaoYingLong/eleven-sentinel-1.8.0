@@ -67,7 +67,6 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
         if (addrInfo == null) {
             return false;
         }
-
         InetSocketAddress addr = new InetSocketAddress(addrInfo.r1, addrInfo.r2);
         SimpleHttpRequest request = new SimpleHttpRequest(addr, TransportConfig.getHeartbeatApiPath());
         request.setParams(heartBeat.generateCurrentMessage());
@@ -76,8 +75,7 @@ public class SimpleHttpHeartbeatSender implements HeartbeatSender {
             if (response.getStatusCode() == OK_STATUS) {
                 return true;
             } else if (clientErrorCode(response.getStatusCode()) || serverErrorCode(response.getStatusCode())) {
-                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr
-                    + ", http status code: " + response.getStatusCode());
+                RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr + ", http status code: " + response.getStatusCode());
             }
         } catch (Exception e) {
             RecordLog.warn("[SimpleHttpHeartbeatSender] Failed to send heartbeat to " + addr, e);

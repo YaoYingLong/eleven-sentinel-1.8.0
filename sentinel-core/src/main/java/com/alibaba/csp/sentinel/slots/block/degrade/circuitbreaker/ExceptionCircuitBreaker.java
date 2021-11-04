@@ -74,7 +74,6 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             counter.getErrorCount().add(1);
         }
         counter.getTotalCount().add(1);
-
         handleStateChangeWhenThresholdExceeded(error);
     }
 
@@ -82,7 +81,6 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
         if (currentState.get() == State.OPEN) {
             return;
         }
-        
         if (currentState.get() == State.HALF_OPEN) {
             // In detecting request
             if (error == null) {
@@ -92,7 +90,6 @@ public class ExceptionCircuitBreaker extends AbstractCircuitBreaker {
             }
             return;
         }
-        
         List<SimpleErrorCounter> counters = stat.values();
         long errCount = 0;
         long totalCount = 0;

@@ -120,12 +120,9 @@ public class CtSph implements Sph {
             // so here init the entry only. No rule checking will be done.
             return new CtEntry(resourceWrapper, null, context);
         }
-
-        if (context == null) {
-            // Using default context.
+        if (context == null) { // Using default context.
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
-
         // Global switch is close, no rule checking will do.
         if (!Constants.ON) { // 若全局规则开关是关闭的，则不做规则校验
             return new CtEntry(resourceWrapper, null, context);
@@ -144,8 +141,7 @@ public class CtSph implements Sph {
         } catch (BlockException e1) {
             e.exit(count, args); // 逐个调用slot校验链条中的每一个校验规则的退出exit逻辑
             throw e1;
-        } catch (Throwable e1) {
-            // This should not happen, unless there are errors existing in Sentinel internal.
+        } catch (Throwable e1) {// This should not happen, unless there are errors existing in Sentinel internal.
             RecordLog.info("Sentinel unexpected exception", e1);
         }
         return e;

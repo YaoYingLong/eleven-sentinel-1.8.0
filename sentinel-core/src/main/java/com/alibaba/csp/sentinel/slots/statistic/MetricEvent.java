@@ -23,14 +23,14 @@ public enum MetricEvent {
     /**
      * Normal pass.
      */
-    PASS,
+    PASS, // 通过所有校验规则
     /**
      * Normal block.
      */
-    BLOCK,
-    EXCEPTION,
-    SUCCESS,
-    RT,
+    BLOCK, // 未通过校验规则，抛出BlockException的调用
+    EXCEPTION, // 发生业务异常的调用
+    SUCCESS, // 调用完成的情况，不管是否抛出异常
+    RT, // 所有的SUCCESS调用耗时的总时间
 
     /**
      * Passed in future quota (pre-occupied, since 1.5.0).

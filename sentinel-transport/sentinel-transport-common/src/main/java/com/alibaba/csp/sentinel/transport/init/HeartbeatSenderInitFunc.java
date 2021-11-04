@@ -41,9 +41,7 @@ public class HeartbeatSenderInitFunc implements InitFunc {
 
     private void initSchedulerIfNeeded() {
         if (pool == null) {
-            pool = new ScheduledThreadPoolExecutor(2,
-                new NamedThreadFactory("sentinel-heartbeat-send-task", true),
-                new DiscardOldestPolicy());
+            pool = new ScheduledThreadPoolExecutor(2, new NamedThreadFactory("sentinel-heartbeat-send-task", true), new DiscardOldestPolicy());
         }
     }
 

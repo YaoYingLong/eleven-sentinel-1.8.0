@@ -81,15 +81,11 @@ public class WarmUpController implements TrafficShapingController {
     }
 
     private void construct(double count, int warmUpPeriodInSec, int coldFactor) {
-
         if (coldFactor <= 1) {
             throw new IllegalArgumentException("Cold factor should be larger than 1");
         }
-
         this.count = count;
-
         this.coldFactor = coldFactor;
-
         // thresholdPermits = 0.5 * warmupPeriod / stableInterval.
         // warningToken = 100;
         warningToken = (int)(warmUpPeriodInSec * count) / (coldFactor - 1);
@@ -97,12 +93,10 @@ public class WarmUpController implements TrafficShapingController {
         // (stableInterval + coldInterval)
         // maxToken = 200
         maxToken = warningToken + (int)(2 * warmUpPeriodInSec * count / (1.0 + coldFactor));
-
         // slope
         // slope = (coldIntervalMicros - stableIntervalMicros) / (maxPermits
         // - thresholdPermits);
         slope = (coldFactor - 1.0) / count / (maxToken - warningToken);
-
     }
 
     @Override

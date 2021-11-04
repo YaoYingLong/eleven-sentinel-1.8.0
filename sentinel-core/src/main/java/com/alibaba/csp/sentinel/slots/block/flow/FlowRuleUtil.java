@@ -140,13 +140,11 @@ public final class FlowRuleUtil {
         if (rule.getGrade() == RuleConstant.FLOW_GRADE_QPS) {
             switch (rule.getControlBehavior()) {
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP:
-                    return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                        ColdFactorProperty.coldFactor);
+                    return new WarmUpController(rule.getCount(), rule.getWarmUpPeriodSec(), ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER:
                     return new RateLimiterController(rule.getMaxQueueingTimeMs(), rule.getCount());
                 case RuleConstant.CONTROL_BEHAVIOR_WARM_UP_RATE_LIMITER:
-                    return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(),
-                        rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
+                    return new WarmUpRateLimiterController(rule.getCount(), rule.getWarmUpPeriodSec(), rule.getMaxQueueingTimeMs(), ColdFactorProperty.coldFactor);
                 case RuleConstant.CONTROL_BEHAVIOR_DEFAULT:
                 default:
                     // Default mode or unknown mode: default traffic shaping controller (fast-reject).

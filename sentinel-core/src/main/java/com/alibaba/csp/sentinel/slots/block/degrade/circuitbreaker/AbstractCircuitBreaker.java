@@ -66,13 +66,11 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     @Override
     public boolean tryPass(Context context) {
-        // Template implementation.
-        if (currentState.get() == State.CLOSED) {
-            return true;
+        if (currentState.get() == State.CLOSED) { // Template implementation.
+            return true; // 若熔断器开关是关闭状态
         }
-        if (currentState.get() == State.OPEN) {
-            // For half-open state we allow a request for probing.
-            return retryTimeoutArrived() && fromOpenToHalfOpen(context);
+        if (currentState.get() == State.OPEN) { // 若熔断器开关是打开状态
+            return retryTimeoutArrived() && fromOpenToHalfOpen(context); // 对于半开状态，允许请求探测
         }
         return false;
     }
@@ -111,7 +109,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
                     // Note: This works as a temporary workaround for https://github.com/alibaba/Sentinel/issues/1638
                     // Without the hook, the circuit breaker won't recover from half-open state in some circumstances
                     // when the request is actually blocked by upcoming rules (not only degrade rules).
-                    if (entry.getBlockError() != null) {
+                    if (entry.getBlockError() != null) { // 若依然请求失败，将断路器继续打开
                         // Fallback to OPEN due to detecting request is blocked
                         currentState.compareAndSet(State.HALF_OPEN, State.OPEN);
                         notifyObservers(State.HALF_OPEN, State.OPEN, 1.0d);

@@ -43,7 +43,6 @@ public class WarmUpRateLimiterController extends WarmUpController {
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         long previousQps = (long) node.previousPassQps();
         syncToken(previousQps);
-
         long currentTime = TimeUtil.currentTimeMillis();
 
         long restToken = storedTokens.get();
@@ -51,7 +50,6 @@ public class WarmUpRateLimiterController extends WarmUpController {
         long expectedTime = 0;
         if (restToken >= warningToken) {
             long aboveToken = restToken - warningToken;
-
             // current interval = restToken*slope+1/count
             double warmingQps = Math.nextUp(1.0 / (aboveToken * slope + 1.0 / count));
             costTime = Math.round(1.0 * (acquireCount) / warmingQps * 1000);
@@ -59,7 +57,6 @@ public class WarmUpRateLimiterController extends WarmUpController {
             costTime = Math.round(1.0 * (acquireCount) / count * 1000);
         }
         expectedTime = costTime + latestPassedTime.get();
-
         if (expectedTime <= currentTime) {
             latestPassedTime.set(currentTime);
             return true;

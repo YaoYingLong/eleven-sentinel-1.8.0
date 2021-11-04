@@ -104,7 +104,7 @@ public class StatisticNode implements Node {
     /**
      * The counter for thread count.
      */
-    private LongAdder curThreadNum = new LongAdder();
+    private LongAdder curThreadNum = new LongAdder(); // 用于统计当前线程并发数
 
     /**
      * The last timestamp when metrics were fetched.
@@ -112,7 +112,7 @@ public class StatisticNode implements Node {
     private long lastFetchTime = -1;
 
     @Override
-    public Map<Long, MetricNode> metrics() {
+    public Map<Long, MetricNode> metrics() { // 在MetricTimerListener中被调用，且每秒执行一次
         // The fetch operation is thread-safe under a single-thread scheduler pool.
         long currentTime = TimeUtil.currentTimeMillis();
         currentTime = currentTime - currentTime % 1000;

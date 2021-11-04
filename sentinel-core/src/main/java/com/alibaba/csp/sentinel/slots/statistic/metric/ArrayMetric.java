@@ -109,7 +109,6 @@ public class ArrayMetric implements Metric {
         data.currentWindow();
         long pass = 0;
         List<MetricBucket> list = data.values();
-
         for (MetricBucket window : list) {
             pass += window.pass();
         }

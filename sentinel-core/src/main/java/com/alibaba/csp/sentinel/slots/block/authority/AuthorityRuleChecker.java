@@ -29,12 +29,10 @@ final class AuthorityRuleChecker {
 
     static boolean passCheck(AuthorityRule rule, Context context) {
         String requester = context.getOrigin();
-        // Empty origin or empty limitApp will pass.
         if (StringUtil.isEmpty(requester) || StringUtil.isEmpty(rule.getLimitApp())) {
-            return true;
+            return true; // Empty origin or empty limitApp will pass.
         }
-        // Do exact match with origin name.
-        int pos = rule.getLimitApp().indexOf(requester);
+        int pos = rule.getLimitApp().indexOf(requester); // Do exact match with origin name.
         boolean contain = pos > -1;
         if (contain) {
             boolean exactlyMatch = false;

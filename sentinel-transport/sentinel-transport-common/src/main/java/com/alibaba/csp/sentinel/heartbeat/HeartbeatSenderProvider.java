@@ -37,8 +37,7 @@ public final class HeartbeatSenderProvider {
             RecordLog.warn("[HeartbeatSenderProvider] WARN: No existing HeartbeatSender found");
         } else {
             heartbeatSender = resolved;
-            RecordLog.info("[HeartbeatSenderProvider] HeartbeatSender activated: " + resolved.getClass()
-                .getCanonicalName());
+            RecordLog.info("[HeartbeatSenderProvider] HeartbeatSender activated: " + resolved.getClass().getCanonicalName());
         }
     }
 

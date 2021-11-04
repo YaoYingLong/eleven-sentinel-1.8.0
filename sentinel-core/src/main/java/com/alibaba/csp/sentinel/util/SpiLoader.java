@@ -251,7 +251,7 @@ public final class SpiLoader {
             int idx = 0;
             for (; idx < list.size(); idx++) {
                 if (list.get(idx).getOrder() > order) {
-                    break; // 根据@SpiOrder注解中配置的值来进行比较排序
+                    break; // 根据@SpiOrder注解中配置的值来进行比较排序，越小越排在前面
                 }
             }
             list.add(idx, new SpiOrderWrapper<>(order, spi));

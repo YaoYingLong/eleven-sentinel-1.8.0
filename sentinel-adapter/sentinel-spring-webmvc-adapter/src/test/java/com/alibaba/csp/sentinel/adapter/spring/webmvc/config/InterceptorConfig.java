@@ -39,7 +39,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         //Add sentinel interceptor
         addSpringMvcInterceptor(registry);
-
         //If you want to sentinel the total flow, you can add total interceptor
         addSpringMvcTotalInterceptor(registry);
     }
@@ -73,7 +72,6 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 return request.getHeader("S-user");
             }
         });
-
         //Add sentinel interceptor
         registry.addInterceptor(new SentinelWebInterceptor(config)).addPathPatterns("/**");
     }
@@ -81,11 +79,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private void addSpringMvcTotalInterceptor(InterceptorRegistry registry) {
         //Configure
         SentinelWebMvcTotalConfig config = new SentinelWebMvcTotalConfig();
-
         //Custom configuration if necessary
         config.setRequestAttributeName("my_sentinel_spring_mvc_total_entity_container");
         config.setTotalResourceName("my_spring_mvc_total_url_request");
-
         //Add sentinel interceptor
         registry.addInterceptor(new SentinelWebTotalInterceptor(config)).addPathPatterns("/**");
     }

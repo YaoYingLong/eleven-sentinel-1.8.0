@@ -46,8 +46,7 @@ public final class DegradeRuleManager {
     private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
 
     private static final RulePropertyListener LISTENER = new RulePropertyListener();
-    private static SentinelProperty<List<DegradeRule>> currentProperty
-        = new DynamicSentinelProperty<>();
+    private static SentinelProperty<List<DegradeRule>> currentProperty = new DynamicSentinelProperty<>();
 
     static {
         currentProperty.addListener(LISTENER);

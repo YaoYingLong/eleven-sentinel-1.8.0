@@ -85,10 +85,10 @@ public class FlowRuleChecker {
         if (StringUtil.isEmpty(refResource)) {
             return null;
         }
-        if (strategy == RuleConstant.STRATEGY_RELATE) {
+        if (strategy == RuleConstant.STRATEGY_RELATE) {  // 流控模式：关联
             return ClusterBuilderSlot.getClusterNode(refResource);
         }
-        if (strategy == RuleConstant.STRATEGY_CHAIN) {
+        if (strategy == RuleConstant.STRATEGY_CHAIN) {  // 流控模式：链路
             if (!refResource.equals(context.getName())) {
                 return null;
             }
@@ -103,30 +103,28 @@ public class FlowRuleChecker {
     }
 
     static Node selectNodeByRequesterAndStrategy(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node) {
-        // The limit app should not be empty.
-        String limitApp = rule.getLimitApp();
+        String limitApp = rule.getLimitApp(); // The limit app should not be empty.
         int strategy = rule.getStrategy();
         String origin = context.getOrigin();
         if (limitApp.equals(origin) && filterOrigin(origin)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
+            if (strategy == RuleConstant.STRATEGY_DIRECT) { // 流控模式：直接
                 // Matches limit origin, return origin statistic node.
                 return context.getOriginNode();
             }
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_DEFAULT.equals(limitApp)) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
+            if (strategy == RuleConstant.STRATEGY_DIRECT) { // 流控模式：关联
                 // Return the cluster node.
                 return node.getClusterNode();
             }
             return selectReferenceNode(rule, context, node);
         } else if (RuleConstant.LIMIT_APP_OTHER.equals(limitApp)
             && FlowRuleManager.isOtherOrigin(origin, rule.getResource())) {
-            if (strategy == RuleConstant.STRATEGY_DIRECT) {
+            if (strategy == RuleConstant.STRATEGY_DIRECT) { // 流控模式：链路
                 return context.getOriginNode();
             }
             return selectReferenceNode(rule, context, node);
         }
-
         return null;
     }
 

@@ -39,8 +39,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
 
     public SentinelWebInterceptor(SentinelWebMvcConfig config) {
         super(config);
-        if (config == null) {
-            // Use the default config by default.
+        if (config == null) { // Use the default config by default.
             this.config = new SentinelWebMvcConfig();
         } else {
             this.config = config;
@@ -48,8 +47,7 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
     }
 
     @Override
-    protected String getResourceName(HttpServletRequest request) {
-        // Resolve the Spring Web URL pattern from the request attribute.
+    protected String getResourceName(HttpServletRequest request) { // Resolve the Spring Web URL pattern from the request attribute.
         Object resourceNameObject = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         if (resourceNameObject == null || !(resourceNameObject instanceof String)) {
             return null;
@@ -59,13 +57,11 @@ public class SentinelWebInterceptor extends AbstractSentinelInterceptor {
         if (urlCleaner != null) {
             resourceName = urlCleaner.clean(resourceName);
         }
-        // Add method specification if necessary
-        if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) {
+        if (StringUtil.isNotEmpty(resourceName) && config.isHttpMethodSpecify()) { // Add method specification if necessary
             resourceName = request.getMethod().toUpperCase() + ":" + resourceName;
         }
         return resourceName;
     }
-
     @Override
     protected String getContextName(HttpServletRequest request) {
         if (config.isWebContextUnify()) {

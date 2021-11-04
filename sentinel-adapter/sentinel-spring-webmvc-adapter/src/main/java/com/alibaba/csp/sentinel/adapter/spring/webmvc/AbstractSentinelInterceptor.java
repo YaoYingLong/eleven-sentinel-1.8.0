@@ -73,12 +73,9 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
      */
     private Integer increaseReferece(HttpServletRequest request, String rcKey, int step) {
         Object obj = request.getAttribute(rcKey);
-        
-        if (obj == null) {
-            // initial
+        if (obj == null) { // initial
             obj = Integer.valueOf(0);
         }
-        
         Integer newRc = (Integer)obj + step;
         request.setAttribute(rcKey, newRc);
         return newRc;
@@ -94,8 +91,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
             if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), 1) != 1) {
                 return true;
             }
-            // Parse the request origin using registered origin parser.
-            String origin = parseOrigin(request);
+            String origin = parseOrigin(request); // Parse the request origin using registered origin parser.
             String contextName = getContextName(request);
             ContextUtil.enter(contextName, origin);
             Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
@@ -130,28 +126,22 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         if (increaseReferece(request, this.baseWebMvcConfig.getRequestRefName(), -1) != 0) {
             return;
         }
-        
         Entry entry = getEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName());
-        if (entry == null) {
-            // should not happen
-            RecordLog.warn("[{}] No entry found in request, key: {}",
-                    getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
+        if (entry == null) { // should not happen
+            RecordLog.warn("[{}] No entry found in request, key: {}", getClass().getSimpleName(), baseWebMvcConfig.getRequestAttributeName());
             return;
         }
-        
-        traceExceptionAndExit(entry, ex);
+        traceExceptionAndExit(entry, ex); // 在该方法中执行entry.exit()
         removeEntryInRequest(request);
         ContextUtil.exit();
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-                           ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
     }
 
     protected Entry getEntryInRequest(HttpServletRequest request, String attrKey) {
@@ -176,8 +166,7 @@ public abstract class AbstractSentinelInterceptor implements HandlerInterceptor 
         if (baseWebMvcConfig.getBlockExceptionHandler() != null) {
             baseWebMvcConfig.getBlockExceptionHandler().handle(request, response, e);
         } else {
-            // Throw BlockException directly. Users need to handle it in Spring global exception handler.
-            throw e;
+            throw e; // Throw BlockException directly. Users need to handle it in Spring global exception handler.
         }
     }
 

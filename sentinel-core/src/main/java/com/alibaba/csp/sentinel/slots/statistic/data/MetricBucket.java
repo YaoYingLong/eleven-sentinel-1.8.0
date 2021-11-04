@@ -28,11 +28,10 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
 public class MetricBucket {
 
     private final LongAdder[] counters;
-
-    private volatile long minRt;
+    private volatile long minRt; // 默认值为5000
 
     public MetricBucket() {
-        MetricEvent[] events = MetricEvent.values();
+        MetricEvent[] events = MetricEvent.values(); // 根据所有的状态类型创建一个数组
         this.counters = new LongAdder[events.length];
         for (MetricEvent event : events) {
             counters[event.ordinal()] = new LongAdder();
@@ -50,7 +49,7 @@ public class MetricBucket {
     }
 
     private void initMinRt() {
-        this.minRt = SentinelConfig.statisticMaxRt();
+        this.minRt = SentinelConfig.statisticMaxRt(); // 默认值为5000
     }
 
     /**

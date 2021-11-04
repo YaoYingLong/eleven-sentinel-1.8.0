@@ -40,7 +40,6 @@ public class LogSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         } catch (Throwable e) {
             RecordLog.warn("Unexpected entry exception", e);
         }
-
     }
 
     @Override
