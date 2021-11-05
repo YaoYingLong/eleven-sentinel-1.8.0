@@ -125,7 +125,6 @@ public class FlowRuleManager {
     }
 
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
-
         @Override
         public void configUpdate(List<FlowRule> value) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(value);
@@ -135,7 +134,6 @@ public class FlowRuleManager {
             }
             RecordLog.info("[FlowRuleManager] Flow rules received: " + flowRules);
         }
-
         @Override
         public void configLoad(List<FlowRule> conf) {
             Map<String, List<FlowRule>> rules = FlowRuleUtil.buildFlowRuleMap(conf);
@@ -146,5 +144,4 @@ public class FlowRuleManager {
             RecordLog.info("[FlowRuleManager] Flow rules loaded: " + flowRules);
         }
     }
-
 }

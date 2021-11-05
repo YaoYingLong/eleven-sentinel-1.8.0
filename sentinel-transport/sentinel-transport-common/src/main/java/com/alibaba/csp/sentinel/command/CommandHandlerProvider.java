@@ -38,7 +38,7 @@ public class CommandHandlerProvider implements Iterable<CommandHandler> {
      *
      * @return list of all named command handlers
      */
-    public Map<String, CommandHandler> namedHandlers() {
+    public Map<String, CommandHandler> namedHandlers() { // CommandHandler是用来和控制台交互的处理逻辑
         Map<String, CommandHandler> map = new HashMap<String, CommandHandler>();
         for (CommandHandler handler : serviceLoader) {
             String name = parseCommandName(handler); // 解析@CommandMapping注解中配置的接口名称

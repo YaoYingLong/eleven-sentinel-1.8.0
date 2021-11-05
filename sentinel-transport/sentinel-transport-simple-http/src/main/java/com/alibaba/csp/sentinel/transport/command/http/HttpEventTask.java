@@ -83,12 +83,12 @@ public class HttpEventTask implements Runnable {
                 processPostRequest(inputStream, request); // POST请求参数解析
             }
             // Validate the target command.
-            String commandName = HttpCommandUtils.getTarget(request);
+            String commandName = HttpCommandUtils.getTarget(request); // 解析Sentinel dashboard发送过来的请求，获取请求命令
             if (StringUtil.isBlank(commandName)) {
                 writeResponse(printWriter, StatusCode.BAD_REQUEST, INVALID_COMMAND_MESSAGE);
                 return;
             }
-            // Find the matching command handler.
+            // 根据请求命令找到对应的处理器
             CommandHandler<?> commandHandler = SimpleHttpCommandCenter.getHandler(commandName);
             if (commandHandler != null) {
                 CommandResponse<?> response = commandHandler.handle(request);

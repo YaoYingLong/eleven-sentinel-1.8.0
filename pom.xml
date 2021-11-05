@@ -79,6 +79,7 @@
 
         <module>sentinel-demo</module>
         <module>sentinel-benchmark</module>
+        <module>sentinel-datasource-extension-file-pull</module>
 
     </modules>
 

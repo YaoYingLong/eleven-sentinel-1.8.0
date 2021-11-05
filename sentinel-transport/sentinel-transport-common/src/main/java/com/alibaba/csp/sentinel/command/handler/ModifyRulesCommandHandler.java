@@ -68,7 +68,7 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
         String result = "success";
         if (FLOW_RULE_TYPE.equalsIgnoreCase(type)) {
             List<FlowRule> flowRules = JSONArray.parseArray(data, FlowRule.class);
-            FlowRuleManager.loadRules(flowRules);
+            FlowRuleManager.loadRules(flowRules); // 加载流控规则
             if (!writeToDataSource(getFlowDataSource(), flowRules)) { // 获取写数据源，做持久化
                 result = WRITE_DS_FAILURE_MSG;
             }
@@ -109,7 +109,7 @@ public class ModifyRulesCommandHandler implements CommandHandler<String> {
     private <T> boolean writeToDataSource(WritableDataSource<T> dataSource, T value) {
         if (dataSource != null) {
             try {
-                dataSource.write(value);
+                dataSource.write(value); // FileWritableDataSource#write 持久化到本地文件
             } catch (Exception e) {
                 RecordLog.warn("Write data source failed", e);
                 return false;

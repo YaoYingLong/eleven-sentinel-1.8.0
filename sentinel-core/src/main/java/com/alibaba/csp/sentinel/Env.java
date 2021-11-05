@@ -33,7 +33,7 @@ public class Env {
 
     static {
         // If init fails, the process will exit.
-        InitExecutor.doInit();
+        InitExecutor.doInit(); // 通过SPI机制加载sentinel相关依赖包下META/services/下所有的InitFunc实例类
     }
 
 }

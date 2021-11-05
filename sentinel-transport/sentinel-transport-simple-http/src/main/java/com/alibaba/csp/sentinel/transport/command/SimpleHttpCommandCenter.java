@@ -55,7 +55,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     @Override
     @SuppressWarnings("rawtypes")
     public void beforeStart() throws Exception {
-        // Register handlers
+        // 通过SPI机制获取所有的CommandHandler实例，并保持到map中，通过@CommandMapping注解指定key名称，CommandHandler作为value
         Map<String, CommandHandler> handlers = CommandHandlerProvider.getInstance().namedHandlers();
         registerCommands(handlers); // 注册所有实现了CommandHandler的SPI接口
     }
@@ -63,6 +63,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
     @Override
     public void start() throws Exception {
         int nThreads = Runtime.getRuntime().availableProcessors();
+        // 创建一个cpu数线程数大小的固定线程池，用来做业务线程池
         this.bizExecutor = new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<Runnable>(10),
                 new NamedThreadFactory("sentinel-command-center-service-executor"),
@@ -73,6 +74,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                         throw new RejectedExecutionException();
                     }
                 });
+        // 开启服务线程池创建ServerSocket绑定端口，默认8719，实时监听sentinel-dashboard发送的请求
         Runnable serverInitTask = new Runnable() {
             int port;
             {
@@ -85,7 +87,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
             @Override
             public void run() {
                 boolean success = false;
-                ServerSocket serverSocket = getServerSocketFromBasePort(port);
+                ServerSocket serverSocket = getServerSocketFromBasePort(port); // 创建ServerSocket并绑定端口，端口默认从8719开始，被占用就+1
                 if (serverSocket != null) {
                     CommandCenterLog.info("[CommandCenter] Begin listening at port " + serverSocket.getLocalPort());
                     socketReference = serverSocket;
@@ -102,7 +104,7 @@ public class SimpleHttpCommandCenter implements CommandCenter {
                 executor.shutdown();
             }
         };
-        new Thread(serverInitTask).start();
+        new Thread(serverInitTask).start(); // 开启服务线程
     }
 
     /**
@@ -161,12 +163,12 @@ public class SimpleHttpCommandCenter implements CommandCenter {
         }
         @Override
         public void run() {
-            while (true) {
+            while (true) { // 死循环监听当前端口
                 Socket socket = null;
                 try {
                     socket = this.serverSocket.accept();
                     setSocketSoTimeout(socket);
-                    HttpEventTask eventTask = new HttpEventTask(socket);
+                    HttpEventTask eventTask = new HttpEventTask(socket); // socket事件执行线程
                     bizExecutor.submit(eventTask);
                 } catch (Exception e) {
                     CommandCenterLog.info("Server error", e);

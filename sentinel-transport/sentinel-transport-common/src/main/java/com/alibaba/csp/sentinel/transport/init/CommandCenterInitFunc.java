@@ -29,6 +29,7 @@ public class CommandCenterInitFunc implements InitFunc {
 
     @Override
     public void init() throws Exception {
+        // 通过SPI机制获取到SimpleHttpCommandCenter对象
         CommandCenter commandCenter = CommandCenterProvider.getCommandCenter();
         if (commandCenter == null) {
             RecordLog.warn("[CommandCenterInitFunc] Cannot resolve CommandCenter");

@@ -42,23 +42,31 @@ import com.alibaba.fastjson.TypeReference;
  * @author Eric Zhao
  */
 public class FileDataSourceInit implements InitFunc {
-
+    /**
+     * 利用InitFunc扩展实现FileDataSourceInit初始化逻辑
+     * 当用户访问sentinel资源时，会初始化该模块，从本地文件加载sentinel规则
+     * 当文件配置发生变更时，利用读取数据源监听配置规则变化，将配置更新到内存
+     * 当sentinel控制台推送规则时，利用写数据源将配置更新到规则文件
+     * @throws Exception
+     */
     @Override
     public void init() throws Exception {
         // A fake path.
         String flowRuleDir = System.getProperty("user.home") + File.separator + "sentinel" + File.separator + "rules";
         String flowRuleFile = "flowRule.json";
         String flowRulePath = flowRuleDir + File.separator + flowRuleFile;
-
+        // 创建流控规则读取数据源FileRefreshableDataSource，需要流控规则的读取路径
         ReadableDataSource<String, List<FlowRule>> ds = new FileRefreshableDataSource<>(
             flowRulePath, source -> JSON.parseObject(source, new TypeReference<List<FlowRule>>() {})
         );
         // Register to flow rule manager.
+        // 可读数据源注册到FlowRuleManager，当规则文件发生变化时，会更新规则到内存中
         FlowRuleManager.register2Property(ds.getProperty());
-
+        // 创建写流控规则的数据源FileWritableDataSource
         WritableDataSource<List<FlowRule>> wds = new FileWritableDataSource<>(flowRulePath, this::encodeJson);
         // Register to writable data source registry so that rules can be updated to file
         // when there are rules pushed from the Sentinel Dashboard.
+        // 将可写数据源注册到transport模块的WritableDataSourceRegistry中，当收到控制台推送的规则时，会先更新内存，然后将规则写入到文件中
         WritableDataSourceRegistry.registerFlowDataSource(wds);
     }
 

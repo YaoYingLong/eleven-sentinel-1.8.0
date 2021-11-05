@@ -76,11 +76,9 @@ public class CommonFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest sRequest = (HttpServletRequest) request;
         Entry urlEntry = null;
-
         try {
             String target = FilterUtil.filterTarget(sRequest);
             // Clean and unify the URL.
@@ -95,11 +93,11 @@ public class CommonFilter implements Filter {
             // in the UrlCleaner implementation.
             if (!StringUtil.isEmpty(target)) {
                 // Parse the request origin using registered origin parser.
-                String origin = parseOrigin(sRequest);
+                String origin = parseOrigin(sRequest); // 解析资源的请求来源
+                // 用于控制是否收敛context，将其配置为false即可根据不同的URL进行链路限流，webContextUnify为true，统一入口为sentinel_web_servlet_context导致链路限流不生效
                 String contextName = webContextUnify ? WebServletConfig.WEB_SERVLET_CONTEXT_NAME : target;
-                ContextUtil.enter(contextName, origin);
-
-                if (httpMethodSpecify) {
+                ContextUtil.enter(contextName, origin); // 创建资源上下文
+                if (httpMethodSpecify) { // 判断是否为资源添加HTTP method作为前缀
                     // Add HTTP method prefix if necessary.
                     String pathWithHttpMethod = sRequest.getMethod().toUpperCase() + COLON + target;
                     urlEntry = SphU.entry(pathWithHttpMethod, ResourceTypeConstants.COMMON_WEB, EntryType.IN);
@@ -124,10 +122,11 @@ public class CommonFilter implements Filter {
     }
 
     private String parseOrigin(HttpServletRequest request) {
+        // RequestOriginParser的实现要生效，需交给WebCallbackManager管理
         RequestOriginParser originParser = WebCallbackManager.getRequestOriginParser();
         String origin = EMPTY_ORIGIN;
         if (originParser != null) {
-            origin = originParser.parseOrigin(request);
+            origin = originParser.parseOrigin(request); // 授权规则的扩展点，来源访问控制根据资源的请求来源限制资源是否通过
             if (StringUtil.isEmpty(origin)) {
                 return EMPTY_ORIGIN;
             }

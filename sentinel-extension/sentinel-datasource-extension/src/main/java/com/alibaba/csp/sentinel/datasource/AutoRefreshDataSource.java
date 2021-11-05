@@ -45,13 +45,12 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
             throw new IllegalArgumentException("recommendRefreshMs must > 0, but " + recommendRefreshMs + " get");
         }
         this.recommendRefreshMs = recommendRefreshMs;
-        startTimerService();
+        startTimerService(); // 扩展自动更新功能
     }
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private void startTimerService() {
-        service = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
+    private void startTimerService() { // 自动更新定时任务，开启线程监控本地文件最后修改时间，周期3s
+        service = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-datasource-auto-refresh-task", true));
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -59,13 +58,13 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
                     if (!isModified()) {
                         return;
                     }
-                    T newValue = loadConfig();
-                    getProperty().updateValue(newValue);
+                    T newValue = loadConfig(); // 若修改过，获取文件最后的修改时间，并加载文件
+                    getProperty().updateValue(newValue); // 更新到内存中
                 } catch (Throwable e) {
                     RecordLog.info("loadConfig exception", e);
                 }
             }
-        }, recommendRefreshMs, recommendRefreshMs, TimeUnit.MILLISECONDS);
+        }, recommendRefreshMs, recommendRefreshMs, TimeUnit.MILLISECONDS); // 默认每3s执行一次
     }
 
     @Override

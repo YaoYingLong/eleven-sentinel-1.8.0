@@ -51,10 +51,9 @@ public class DynamicSentinelProperty<T> implements SentinelProperty<T> {
             return false;
         }
         RecordLog.info("[DynamicSentinelProperty] Config will be updated to: " + newValue);
-
         value = newValue;
         for (PropertyListener<T> listener : listeners) {
-            listener.configUpdate(newValue);
+            listener.configUpdate(newValue); // 用新规则替换旧规则，并通知所有所有属性监听器回调configUpdate
         }
         return true;
     }
