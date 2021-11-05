@@ -103,7 +103,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     @Override
-    public String readSource() throws Exception {
+    public String readSource() throws Exception { // AbstractDataSource中的loadConfig方法调用该方法加载数据
         if (!file.exists()) {// Will throw FileNotFoundException later.
             RecordLog.warn(String.format("[FileRefreshableDataSource] File does not exist: %s", file.getAbsolutePath()));
         }
@@ -127,7 +127,7 @@ public class FileRefreshableDataSource<T> extends AutoRefreshDataSource<String, 
     }
 
     @Override
-    protected boolean isModified() {
+    protected boolean isModified() { // 在定时更新规则配置的任务中调用该方法判断文件是否被改变
         long curLastModified = file.lastModified();
         if (curLastModified != this.lastModified) {
             this.lastModified = curLastModified;

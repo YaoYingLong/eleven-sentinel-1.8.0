@@ -52,12 +52,11 @@ public class FlowRuleManager {
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
     @SuppressWarnings("PMD.ThreadPoolCreationRule")
-    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory("sentinel-metrics-record-task", true));
+    private static final ScheduledExecutorService SCHEDULER = Executors.newScheduledThreadPool(1, new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
         currentProperty.addListener(LISTENER);
-        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS);
+        SCHEDULER.scheduleAtFixedRate(new MetricTimerListener(), 0, 1, TimeUnit.SECONDS); // 监控指标的定时统计
     }
 
     /**

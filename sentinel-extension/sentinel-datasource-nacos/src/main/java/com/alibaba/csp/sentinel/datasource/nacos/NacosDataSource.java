@@ -68,8 +68,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param dataId     data ID, cannot be empty
      * @param parser     customized data parser, cannot be empty
      */
-    public NacosDataSource(final String serverAddr, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
+    public NacosDataSource(final String serverAddr, final String groupId, final String dataId, Converter<String, T> parser) {
         this(NacosDataSource.buildProperties(serverAddr), groupId, dataId, parser);
     }
 
@@ -80,33 +79,29 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
      * @param dataId     data ID, cannot be empty
      * @param parser     customized data parser, cannot be empty
      */
-    public NacosDataSource(final Properties properties, final String groupId, final String dataId,
-                           Converter<String, T> parser) {
+    public NacosDataSource(final Properties properties, final String groupId, final String dataId, Converter<String, T> parser) {
         super(parser);
         if (StringUtil.isBlank(groupId) || StringUtil.isBlank(dataId)) {
-            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]",
-                groupId, dataId));
+            throw new IllegalArgumentException(String.format("Bad argument: groupId=[%s], dataId=[%s]", groupId, dataId));
         }
         AssertUtil.notNull(properties, "Nacos properties must not be null, you could put some keys from PropertyKeyConst");
         this.groupId = groupId;
         this.dataId = dataId;
         this.properties = properties;
-        this.configListener = new Listener() {
+        this.configListener = new Listener() { // 创建监听器
             @Override
             public Executor getExecutor() {
                 return pool;
             }
-
             @Override
-            public void receiveConfigInfo(final String configInfo) {
-                RecordLog.info(String.format("[NacosDataSource] New property value received for (properties: %s) (dataId: %s, groupId: %s): %s",
-                    properties, dataId, groupId, configInfo));
-                T newValue = NacosDataSource.this.parser.convert(configInfo);
+            public void receiveConfigInfo(final String configInfo) { // 当配置发生变更回调该方法
+                RecordLog.info(String.format("[NacosDataSource] New property value received for (properties: %s) (dataId: %s, groupId: %s): %s", properties, dataId, groupId, configInfo));
+                T newValue = NacosDataSource.this.parser.convert(configInfo); // 解析配置
                 // Update the new value to the property.
-                getProperty().updateValue(newValue);
+                getProperty().updateValue(newValue); // 通过监听器更新到内存
             }
         };
-        initNacosListener();
+        initNacosListener(); // 初始化Nacos监听器
         loadInitialConfig();
     }
 
@@ -126,7 +121,7 @@ public class NacosDataSource<T> extends AbstractDataSource<String, T> {
         try {
             this.configService = NacosFactory.createConfigService(this.properties);
             // Add config listener.
-            configService.addListener(dataId, groupId, configListener);
+            configService.addListener(dataId, groupId, configListener); // 给具体的dataId注册监听器，配置发生变化时回调
         } catch (Exception e) {
             RecordLog.warn("[NacosDataSource] Error occurred when initializing Nacos data source", e);
             e.printStackTrace();

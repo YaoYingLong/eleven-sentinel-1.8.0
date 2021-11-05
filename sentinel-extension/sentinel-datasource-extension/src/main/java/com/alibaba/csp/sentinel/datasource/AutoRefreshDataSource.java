@@ -55,7 +55,7 @@ public abstract class AutoRefreshDataSource<S, T> extends AbstractDataSource<S, 
             @Override
             public void run() {
                 try {
-                    if (!isModified()) {
+                    if (!isModified()) { // 若没有修改则直接跳过
                         return;
                     }
                     T newValue = loadConfig(); // 若修改过，获取文件最后的修改时间，并加载文件
