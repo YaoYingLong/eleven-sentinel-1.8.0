@@ -231,7 +231,7 @@ public final class SpiLoader {
             for (T spi : serviceLoader) {
                 int order = SpiOrderResolver.resolveOrder(spi);
                 // Since SPI is lazy initialized in ServiceLoader, we use online sort algorithm here.
-                SpiOrderResolver.insertSorted(orderWrappers, spi, order); // 对加载的Slot进行排序，约小约排在前面
+                SpiOrderResolver.insertSorted(orderWrappers, spi, order); // 对加载的Slot进行排序，越小越排在前面
                 RecordLog.debug("[SpiLoader] Found {} SPI: {} with order {}", clazz.getSimpleName(), spi.getClass().getCanonicalName(), order);
             }
             List<T> list = new ArrayList<>(orderWrappers.size());

@@ -30,7 +30,6 @@ class FakeAdvancedMetricExtension implements AdvancedMetricExtension {
     long complete = 0;
     long exception = 0;
     long rt = 0;
-
     long concurrency = 0;
 
     @Override

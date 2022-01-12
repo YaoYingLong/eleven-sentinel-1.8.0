@@ -46,6 +46,7 @@ public class AuthoritySlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     }
 
     void checkBlackWhiteAuthority(ResourceWrapper resource, Context context) throws AuthorityException {
+        // 加载配置的AuthorityRule
         Map<String, Set<AuthorityRule>> authorityRules = AuthorityRuleManager.getAuthorityRules();
         if (authorityRules == null) {
             return;

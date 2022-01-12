@@ -50,12 +50,10 @@ public abstract class InMemoryRuleRepositoryAdapter<T extends RuleEntity> implem
         if (processedEntity != null) {
             allRules.put(processedEntity.getId(), processedEntity);
             machineRules.computeIfAbsent(MachineInfo.of(processedEntity.getApp(), processedEntity.getIp(),
-                processedEntity.getPort()), e -> new ConcurrentHashMap<>(32))
-                .put(processedEntity.getId(), processedEntity);
+                processedEntity.getPort()), e -> new ConcurrentHashMap<>(32)).put(processedEntity.getId(), processedEntity);
             appRules.computeIfAbsent(processedEntity.getApp(), v -> new ConcurrentHashMap<>(32))
                 .put(processedEntity.getId(), processedEntity);
         }
-
         return processedEntity;
     }
 

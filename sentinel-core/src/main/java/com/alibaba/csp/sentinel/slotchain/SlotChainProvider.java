@@ -47,7 +47,7 @@ public final class SlotChainProvider {
         } else {
             RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: " + slotChainBuilder.getClass().getCanonicalName());
         }
-        return slotChainBuilder.build();
+        return slotChainBuilder.build(); // 调用DefaultSlotChainBuilder的build方法
     }
 
     private SlotChainProvider() {}

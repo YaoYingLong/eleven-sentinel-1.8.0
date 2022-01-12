@@ -165,7 +165,6 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                     // Build invocation tree
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }
-
             }
         }
         context.setCurNode(node);

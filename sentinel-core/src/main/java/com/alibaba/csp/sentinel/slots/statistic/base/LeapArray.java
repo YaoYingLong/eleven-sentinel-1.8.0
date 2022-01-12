@@ -62,10 +62,10 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
 
-        this.windowLengthInMs = intervalInMs / sampleCount; // 时间窗口长度为500ms
-        this.intervalInMs = intervalInMs;
-        this.sampleCount = sampleCount;
-        this.array = new AtomicReferenceArray<>(sampleCount); // 数组长度为2，放时间窗口的数组
+        this.windowLengthInMs = intervalInMs / sampleCount; // 秒级时间窗口长度为500ms，分钟级时间窗口长度为1000ms
+        this.intervalInMs = intervalInMs;   // 秒级为500ms，分钟级为60 * 1000ms
+        this.sampleCount = sampleCount;   // 秒级为2，分钟级为60
+        this.array = new AtomicReferenceArray<>(sampleCount); // 秒级数组长度为2，分钟级数组长度为60，放时间窗口的数组
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class LeapArray<T> {
     protected abstract WindowWrap<T> resetWindowTo(WindowWrap<T> windowWrap, long startTime);
 
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
-        long timeId = timeMillis / windowLengthInMs;
+        long timeId = timeMillis / windowLengthInMs; // 秒级windowLengthInMs为500ms，分钟级windowLengthInMs为1000ms
         // Calculate current index so we can map the timestamp to the leap array.
         return (int)(timeId % array.length());
     }

@@ -13,35 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.controller;
-
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+package com.alibaba.csp.sentinel.dashboard.controller.v2;
 
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.InMemoryRuleRepositoryAdapter;
-
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Flow rule controller.
@@ -49,11 +42,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @author leyou
  * @author Eric Zhao
  */
-@RestController
-@RequestMapping(value = "/v1/flow")
-public class FlowControllerV1 {
+// @RestController
+// @RequestMapping(value = "/v3/flow")
+public class FlowElevenControllerV1 {
 
-    private final Logger logger = LoggerFactory.getLogger(FlowControllerV1.class);
+    private final Logger logger = LoggerFactory.getLogger(FlowElevenControllerV1.class);
 
     @Autowired
     private InMemoryRuleRepositoryAdapter<FlowRuleEntity> repository;
@@ -61,12 +54,18 @@ public class FlowControllerV1 {
     @Autowired
     private SentinelApiClient sentinelApiClient;
 
+    @Autowired
+    @Qualifier(value = "flowRuleNacosProvider")
+    private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
+
+    @Autowired
+    @Qualifier(value = "flowRuleNacosPublisher")
+    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+
+
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
-    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
-                                                             @RequestParam String ip,
-                                                             @RequestParam Integer port) {
-
+    public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app, @RequestParam String ip, @RequestParam Integer port) {
         if (StringUtil.isEmpty(app)) {
             return Result.ofFail(-1, "app can't be null or empty");
         }
@@ -77,7 +76,17 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, "port can't be null");
         }
         try {
-            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+//            List<FlowRuleEntity> rules = sentinelApiClient.fetchFlowRuleOfMachine(app, ip, port);
+            // 从配置中心获取规则配置
+            List<FlowRuleEntity> rules = ruleProvider.getRules(app, ip, port);
+            if (rules != null && !rules.isEmpty()) {
+                for (FlowRuleEntity entity : rules) {
+                    entity.setApp(app);
+                    if (entity.getClusterConfig() != null && entity.getClusterConfig().getFlowId() != null) {
+                        entity.setId(entity.getClusterConfig().getFlowId());
+                    }
+                }
+            }
             rules = repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -133,6 +142,9 @@ public class FlowControllerV1 {
         return null;
     }
 
+    /**
+     * 发布流控规则接口
+     */
     @PostMapping("/rule")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
@@ -147,9 +159,11 @@ public class FlowControllerV1 {
         entity.setLimitApp(entity.getLimitApp().trim());
         entity.setResource(entity.getResource().trim());
         try {
-            entity = repository.save(entity);
+            entity = repository.save(entity); // 控制台保存规则，持久化扩展点RuleRepository
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+//            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            // 发布规则到配置中心
+            publishRules(entity.getApp());
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
@@ -161,10 +175,10 @@ public class FlowControllerV1 {
     @PutMapping("/save.json")
     @AuthAction(PrivilegeType.WRITE_RULE)
     public Result<FlowRuleEntity> apiUpdateFlowRule(Long id, String app,
-                                                  String limitApp, String resource, Integer grade,
-                                                  Double count, Integer strategy, String refResource,
-                                                  Integer controlBehavior, Integer warmUpPeriodSec,
-                                                  Integer maxQueueingTimeMs) {
+                                                    String limitApp, String resource, Integer grade,
+                                                    Double count, Integer strategy, String refResource,
+                                                    Integer controlBehavior, Integer warmUpPeriodSec,
+                                                    Integer maxQueueingTimeMs) {
         if (id == null) {
             return Result.ofFail(-1, "id can't be null");
         }
@@ -228,12 +242,14 @@ public class FlowControllerV1 {
                 return Result.ofFail(-1, "save entity fail: null");
             }
 
-            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+//            publishRules(entity.getApp(), entity.getIp(), entity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            // 发布规则到配置中心
+            publishRules(entity.getApp());
             return Result.ofSuccess(entity);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
             logger.error("Error when updating flow rules, app={}, ip={}, ruleId={}", entity.getApp(),
-                entity.getIp(), id, e);
+                    entity.getIp(), id, e);
             return Result.ofFail(-1, e.getMessage());
         }
     }
@@ -256,18 +272,31 @@ public class FlowControllerV1 {
             return Result.ofFail(-1, e.getMessage());
         }
         try {
-            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+//            publishRules(oldEntity.getApp(), oldEntity.getIp(), oldEntity.getPort()).get(5000, TimeUnit.MILLISECONDS);
+            // 发布规则到配置中心
+            publishRules(oldEntity.getApp());
             return Result.ofSuccess(id);
         } catch (Throwable t) {
             Throwable e = t instanceof ExecutionException ? t.getCause() : t;
             logger.error("Error when deleting flow rules, app={}, ip={}, id={}", oldEntity.getApp(),
-                oldEntity.getIp(), id, e);
+                    oldEntity.getIp(), id, e);
             return Result.ofFail(-1, e.getMessage());
         }
     }
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<FlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules);
+        return sentinelApiClient.setFlowRuleOfMachineAsync(app, ip, port, rules); // 和sentinel客户端通信，异步设置流控规则
+    }
+
+    /**
+     * 发布到配置中心
+     *
+     * @param app
+     * @throws Exception
+     */
+    private void publishRules(String app) throws Exception {
+        List<FlowRuleEntity> rules = repository.findAllByApp(app);
+        rulePublisher.publish(app, rules);
     }
 }

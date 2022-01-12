@@ -134,8 +134,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
                 Encoder encoder = pickEncoder(response.getResult().getClass());
                 if (encoder == null) {
                     writeErrorResponse(INTERNAL_SERVER_ERROR.code(), SERVER_ERROR_MESSAGE, ctx);
-                    CommandCenterLog.warn("Error when encoding object",
-                        new IllegalStateException("No compatible encoder"));
+                    CommandCenterLog.warn("Error when encoding object", new IllegalStateException("No compatible encoder"));
                     return;
                 }
                 body = encoder.encode(response.getResult());
@@ -143,14 +142,9 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         } else {
             body = response.getException().getMessage().getBytes(SentinelConfig.charset());
         }
-
         HttpResponseStatus status = response.isSuccess() ? OK : BAD_REQUEST;
-
-        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status,
-            Unpooled.copiedBuffer(body));
-
+        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, Unpooled.copiedBuffer(body));
         httpResponse.headers().set("Content-Type", "text/plain; charset=" + SentinelConfig.charset());
-
         //if (keepAlive) {
         //    httpResponse.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, httpResponse.content().readableBytes());
         //    httpResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);

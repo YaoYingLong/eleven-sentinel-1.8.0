@@ -41,9 +41,9 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
         for (ProcessorSlot slot : sortedSlotList) {
             if (!(slot instanceof AbstractLinkedProcessorSlot)) {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
-                continue;
+                continue; // 若ProcessorSlot不是AbstractLinkedProcessorSlot的子类则跳过
             }
-            chain.addLast((AbstractLinkedProcessorSlot<?>) slot);
+            chain.addLast((AbstractLinkedProcessorSlot<?>) slot); // 按照顺序加入到ProcessorSlotChain中
         }
         return chain;
     }
